@@ -1,4 +1,5 @@
 # RB101 Quick Notes
+[github repo](https://github.com/Monte-Amador/rb101-foundations)
 
 - `.inspect` is handy to see what is happening with an object
 
