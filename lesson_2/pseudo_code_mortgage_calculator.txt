@@ -1,0 +1,25 @@
+START
+
+PRINT >> Welcome to the Monthly Loan Calculator! Please type in your name:
+PRINT >> Hello #{name}, Let's get started!
+
+PRINT >> How much would you like a loan for?
+SET loan_amount = GET user input (validate integer or float)
+
+PRINT >> Great, what is the Annual Percentage Rate (APR) of your loan?
+SET apr = GET user input[percentage] and convert to float by dividing float by 100 (apr.to_f / 100)
+
+SET monthly_interest_rate = calculate APR input divided by 12
+
+PRINT >> Next, how many months will the loan be for? (validate integer or float)
+SET loan_duration_in_months = GET user input (y or m)
+
+SET monthly_payment = loan_amount * ( monthly_interest_rate / ( 1 - ( 1 + monthly_interest_rate )**(-12)))
+
+SET total_interest_paid = monthly_payment * loan_duration_in_months - loan_amount
+
+SET total = total_interest_paid + loan_amount
+
+PRINT >> Based on your input, it looks like you will have monthly payments of (n) over (n) months with a total interest applied of (n) for a grand total of (n)
+
+END
