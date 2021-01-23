@@ -25,8 +25,20 @@ loop do
   prompt("Great, what is the Annual Percentage Rate (APR) of your loan?")
   apr = gets().chomp().to_f() / 100
 
+loan_duration_in_months = ''
+loop do
   prompt("Next, how many months will the loan be for?")
-  loan_duration_in_months = gets().chomp().to_i
+  months = gets().chomp()
+  
+  if number?(months)
+    loan_duration_in_months = months.to_i
+    p loan_duration_in_months
+    break
+  else
+    puts "Error, please try again."
+  end
+end
+
 
   monthly_interest_rate = apr / loan_duration_in_months
 
