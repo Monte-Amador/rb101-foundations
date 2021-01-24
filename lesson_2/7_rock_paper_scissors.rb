@@ -6,24 +6,25 @@ end
 
 def display_results(player, computer)
   if (player == "Rock" && computer == "Scissors") || (player == "Scissors" && computer == "Paper") || (player == "Paper" && computer == "Rock")
-    puts "You won!"
+    prompt "You won!"
   
   elsif (player == "Rock" && computer == "Rock") || (player == "Scissors" && computer == "Scissors") || (player == "Paper" && computer == "Paper")
-    puts "It's a tie!"
+    prompt "It's a tie!"
   
   else
-    puts "The computer won!"
+    prompt "The computer won!"
   end
 end
 
 
-prompt("Welcome to #{VALID_CHOICES}!")
+
+prompt("Welcome to #{VALID_CHOICES.join(', ')}!")
 
 loop do # main loop
   user_choice = ''
 
   loop do # verification loop
-    prompt("Please choose one: #{VALID_CHOICES}.")
+    prompt("Please choose one: #{VALID_CHOICES.join(', ')}.")
     user_choice = Kernel.gets().chomp().capitalize
 
     if ( VALID_CHOICES.include?("#{user_choice}") )
@@ -44,3 +45,5 @@ loop do # main loop
   
   break unless answer == 'y'
 end
+
+prompt("Okay, thanks for playing! Come again soon.")
