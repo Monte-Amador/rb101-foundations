@@ -16,7 +16,11 @@ def number?(input)
 end
 
 def monthly_interest_rate(apr,time)
-  mi_rate = apr / time
+  apr / time
+end
+
+def monthly_payments(principle, monthly_interest_rate, time)
+  principle * (monthly_interest_rate.round(4) / ( 1 - ( 1 + monthly_interest_rate.round(4) )**(-time)))
 end
 
 # 2. USER INPUT AND VALIDATION
@@ -43,12 +47,11 @@ loop do # main loop
     end
   end
 
-# CALCULATING USER INPUT
+# CALCULATIONS
   float_loan_duration_in_months = loan_duration_in_months.to_f()
-  rate = monthly_interest_rate(apr,float_loan_duration_in_months)
   
-  ### REFACTOR LOGIC INTO SEPARATE METHOD(S)
-  payment = loan_amount * (rate.round(4) / ( 1 - ( 1 + rate.round(4) )**(-float_loan_duration_in_months)))
+  rate = monthly_interest_rate(apr, float_loan_duration_in_months)
+  payment = monthly_payments(loan_amount, rate, float_loan_duration_in_months)
 
   total_interest_paid = (payment * float_loan_duration_in_months) - loan_amount
 
