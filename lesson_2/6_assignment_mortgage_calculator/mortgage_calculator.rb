@@ -19,8 +19,12 @@ def monthly_interest_rate(apr,time)
   apr / time
 end
 
-def monthly_payments(principle, monthly_interest_rate, time)
+def monthly_payment(principle, monthly_interest_rate, time)
   principle * (monthly_interest_rate.round(4) / ( 1 - ( 1 + monthly_interest_rate.round(4) )**(-time)))
+end
+
+def total_interest_paid(monthly_payment, time, principle)
+  (monthly_payment * time) - principle
 end
 
 # 2. USER INPUT AND VALIDATION
@@ -47,22 +51,18 @@ loop do # main loop
     end
   end
 
-# CALCULATIONS
   float_loan_duration_in_months = loan_duration_in_months.to_f()
   
   rate = monthly_interest_rate(apr, float_loan_duration_in_months)
-  payment = monthly_payments(loan_amount, rate, float_loan_duration_in_months)
-
-  total_interest_paid = (payment * float_loan_duration_in_months) - loan_amount
-
-  total_including_interest = (total_interest_paid + loan_amount)
-  ###
-  
+  payment = monthly_payment(loan_amount, rate, float_loan_duration_in_months)
+  total_interest = total_interest_paid(payment, float_loan_duration_in_months, loan_amount)
+  total_including_interest = (total_interest + loan_amount)
+    
   final_output_prompt = <<-MSG
   Thanks #{name}, based on your input here are your totals:
   Monthly Payments: $#{payment.round(2)}
   Loan Duration (months): #{loan_duration_in_months}
-  Total Interest Accrued over #{loan_duration_in_months} months: $#{total_interest_paid.round(2)}
+  Total Interest Accrued over #{loan_duration_in_months} months: $#{total_interest.round(2)}
   Total with interest paid: $#{total_including_interest.round(2)}
   MSG
 
