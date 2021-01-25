@@ -30,7 +30,11 @@ end
 # 2. USER INPUT AND VALIDATION
 prompt("Welcome to the Monthly Loan Calculator! Please type in your name:")
 name = gets().chomp()
-prompt("Hello #{name}, Let's get started!")
+if name != ''
+  prompt("Hello #{name}, Let's get started!")
+else
+  prompt("Hello, Let's get started!")
+end
 
 loop do # main loop
   prompt("How much would you like a loan for?")
