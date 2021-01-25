@@ -1,5 +1,5 @@
 # 1. METHOD INITIALIZATIONS
-def prompt (message)
+def prompt(message)
   puts ">> #{message}"
 end
 
@@ -15,12 +15,12 @@ def number?(input)
   integer?(input) || float?(input)
 end
 
-def monthly_interest_rate(apr,time)
+def monthly_interest_rate(apr, time)
   apr / time
 end
 
 def monthly_payment(principle, monthly_interest_rate, time)
-  principle * (monthly_interest_rate.round(4) / ( 1 - ( 1 + monthly_interest_rate.round(4) )**(-time)))
+  principle * (monthly_interest_rate.round(4) / (1 - (1 + monthly_interest_rate.round(4))**(-time)))
 end
 
 def total_interest_paid(monthly_payment, time, principle)
