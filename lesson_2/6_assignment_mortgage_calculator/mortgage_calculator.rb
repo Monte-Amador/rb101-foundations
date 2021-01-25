@@ -1,6 +1,7 @@
 def prompt (message)
   puts ">> #{message}"
 end
+
 def integer?(input)
   input.to_i().to_s() == input
 end
@@ -13,38 +14,38 @@ def number?(input)
   integer?(input) || float?(input)
 end
 
+def monthly_interest_rate(apr,time)
+  rate = apr / time
+end
+
 prompt("Welcome to the Monthly Loan Calculator! Please type in your name:")
 name = gets().chomp()
-
 prompt("Hello #{name}, Let's get started!")
-
-loop do
+monthly_interest_rate = ''
+loop do # main loop
   prompt("How much would you like a loan for?")
   loan_amount = gets().chomp().to_f() 
-
   prompt("Great, what is the Annual Percentage Rate (APR) of your loan?")
   apr = gets().chomp().to_f() / 100
 
-loan_duration_in_months = ''
-loop do
-  prompt("Next, how many months will the loan be for?")
-  months = gets().chomp()
-  
-  if number?(months)
-    loan_duration_in_months = months.to_i
-    p loan_duration_in_months
-    break
-  else
-    puts "Error, please try again."
+  loan_duration_in_months = ''
+  loop do
+    prompt("Next, how many months will the loan be for?")
+    loan_duration_in_months = gets().chomp()
+    if number?(loan_duration_in_months)
+      break
+    else
+      puts "Error, please try again."
+    end
   end
-end
 
+  float_loan_duration_in_months = loan_duration_in_months.to_f()
+  
+  monthly_interest_rate = monthly_interest_rate(apr,loan_duration_in_months.to_f)
+  
+  monthly_payment = loan_amount * ( monthly_interest_rate.round(4) / ( 1 - ( 1 + monthly_interest_rate.round(4) )**(-float_loan_duration_in_months)))
 
-  monthly_interest_rate = apr / loan_duration_in_months
-
-  monthly_payment = loan_amount * ( monthly_interest_rate.round(4) / ( 1 - ( 1 + monthly_interest_rate.round(4) )**(-loan_duration_in_months)))
-
-  total_interest_paid = (monthly_payment * loan_duration_in_months) - loan_amount
+  total_interest_paid = (monthly_payment * float_loan_duration_in_months) - loan_amount
 
   total_including_interest = (total_interest_paid + loan_amount)
 
