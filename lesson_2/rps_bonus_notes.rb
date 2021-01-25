@@ -1,8 +1,10 @@
-TERMS = {rock: ['scissors', 'lizard'], paper: ['rock', 'spock'], scissors: ['paper', 'lizard'], lizard: ['spock', 'paper'], spock: ['scissors', 'rock']}
-
 VALID_CHOICES = {rock: ['r', 'rock'], paper: ['p', 'paper'], scissors: ['sc', 'scissors'], lizard: ['l', 'lizard'], spock: ['sp', 'spock']}
 
-user_choice = ''
+TERMS = {rock: ['scissors', 'lizard'], paper: ['rock', 'spock'], scissors: ['paper', 'lizard'], lizard: ['spock', 'paper'], spock: ['scissors', 'rock']}
+
+def prompt(message)
+  Kernel.puts(">> #{message}")
+end
 
 def validate_input(str)
   match = VALID_CHOICES.select {|key, val| val.include?(str)}
@@ -28,40 +30,36 @@ def display_invalid_prompt()
   EOF
 end
 
-user_input = gets.chomp.downcase
-if validate_input(user_input)
-  validate_input(user_input)
-else
-  puts(display_invalid_prompt)
+prompt("Hello, let's play a game.")
+
+loop do # main loop
+  user_choice = ''
+  computer_input = TERMS.to_a.flatten.sample()
+  
+  loop do # user validation loop
+    prompt("Please choose one: #{display_valid_choices}")
+    user_input = gets.chomp.downcase
+    user_choice = validate_input(user_input)
+    # puts validate_input(user_input).inspect
+    break unless user_choice == nil
+    prompt(display_invalid_prompt)
+  end
+
+  puts"User chose: #{user_choice.capitalize} and Computer chose #{computer_input.capitalize}:"
+  
+  if TERMS[:"#{user_choice}"].include?("#{computer_input}")
+    puts "Player won!"
+  elsif TERMS[:"#{computer_input}"].include?("#{user_choice}")
+    puts "Computer won!"
+  else
+    puts "It's a tie!"
+  end
+
+  prompt("Wanna play again? (y to play again)")
+  answer = gets.chomp
+  break unless answer.downcase == "y"
 end
 
+prompt("Thank you for playing")
 
-user_choice = validate_input(user_input)
-computer_input = TERMS.to_a.flatten.sample()
-
-
-
-
-
-puts"User chose: #{user_choice} and Computer chose #{computer_input}:"
-if TERMS[:"#{user_choice}"].include?(computer_input)
-  puts "Player won!"
-elsif TERMS[:"#{computer_input}"].include?(user_choice)
-  puts "Computer won!"
-else
-  puts "It's a tie!"
-end
-
-# def test(hi)
-#   if VALID_ABBREVIATIONS.include?(hi.capitalize)
-#     VALID_CHOICES.each do |choice|
-#       choice.split('').first == hi.capitalize
-#     end
-#   end
-# end
-
-# if VALID_ABBREVIATIONS.include?(user_input.capitalize)
-#   VALID_CHOICES.each do |choice|
-#     choice if choice.split('').first == user_input.capitalize
-#   end
-# end
+# Keep score of the player's and computer's wins. When either the player or computer reaches five wins, the match is over, and the winning player becomes the grand winner. Don't add your incrementing logic to display_results. Keep your methods simple; they should perform one logical task — no more, no less.
