@@ -45,19 +45,19 @@ loop do # main loop
 
 # CALCULATING USER INPUT
   float_loan_duration_in_months = loan_duration_in_months.to_f()
-  monthly_interest_rate = monthly_interest_rate(apr,loan_duration_in_months.to_f)
+  rate = monthly_interest_rate(apr,float_loan_duration_in_months)
   
   ### REFACTOR LOGIC INTO SEPARATE METHOD(S)
-  monthly_payment = loan_amount * ( monthly_interest_rate.round(4) / ( 1 - ( 1 + monthly_interest_rate.round(4) )**(-float_loan_duration_in_months)))
+  payment = loan_amount * (rate.round(4) / ( 1 - ( 1 + rate.round(4) )**(-float_loan_duration_in_months)))
 
-  total_interest_paid = (monthly_payment * float_loan_duration_in_months) - loan_amount
+  total_interest_paid = (payment * float_loan_duration_in_months) - loan_amount
 
   total_including_interest = (total_interest_paid + loan_amount)
   ###
   
   final_output_prompt = <<-MSG
-  Thanks! Based on your input here are your totals:
-  Monthly Payments: $#{monthly_payment.round(2)}
+  Thanks #{name}, based on your input here are your totals:
+  Monthly Payments: $#{payment.round(2)}
   Loan Duration (months): #{loan_duration_in_months}
   Total Interest Accrued over #{loan_duration_in_months} months: $#{total_interest_paid.round(2)}
   Total with interest paid: $#{total_including_interest.round(2)}
