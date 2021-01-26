@@ -5,7 +5,7 @@
 - define method scoreboard
 - create a hash to hold score = {:user => 0, :computer => 0}
 - increment hash value += 1 when user or computer wins
-- pass displayed results to scoreboard and test who won to see who wins and push to #score[:key]
+- pass results to scoreboard and test who won to see who wins and push to #score[:key]
 
 # encase in master loop as way for exiting game
 # add score announcement (maybe to current statement that asks if you want to continue)
@@ -35,9 +35,7 @@ end
 
 def validate_input(str)
   match = VALID_CHOICES.select {|key, val| val.include?(str)}
-  if match != {}
-    match.to_a().flatten().first().to_s
-  end
+  match.to_a().flatten().first().to_s if match != {}
 end
 
 def display_valid_choices()
@@ -58,11 +56,9 @@ def display_invalid_prompt()
 end
 
 def display_results(user, computer)
-  # loop do
     return "Player won!" if TERMS[:"#{user}"].include?("#{computer}")
     return "Computer won!" if TERMS[:"#{computer}"].include?("#{user}")
     return "It's a tie!"
-  # end
 end 
 
 prompt("Hello, let's play a game.")
