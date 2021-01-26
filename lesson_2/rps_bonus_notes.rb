@@ -1,3 +1,30 @@
+=begin
+# Keep score of the player's and computer's wins. When either the player or computer reaches five wins, the match is over, and the winning player becomes the grand winner. Don't add your incrementing logic to display_results. Keep your methods simple; they should perform one logical task — no more, no less.
+
+# create counter for user and computer scores
+- define method scoreboard
+- create a hash to hold score = {:user => 0, :computer => 0}
+- increment hash value += 1 when user or computer wins
+- pass displayed results to scoreboard and test who won to see who wins and push to #score[:key]
+
+# encase in master loop as way for exiting game
+# add score announcement (maybe to current statement that asks if you want to continue)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+=end
+
 VALID_CHOICES = {rock: ['r', 'rock'], paper: ['p', 'paper'], scissors: ['sc', 'scissors'], lizard: ['l', 'lizard'], spock: ['sp', 'spock']}
 
 TERMS = {rock: ['scissors', 'lizard'], paper: ['rock', 'spock'], scissors: ['paper', 'lizard'], lizard: ['spock', 'paper'], spock: ['scissors', 'rock']}
@@ -30,6 +57,14 @@ def display_invalid_prompt()
   EOF
 end
 
+def display_results(user, computer)
+  # loop do
+    return "Player won!" if TERMS[:"#{user}"].include?("#{computer}")
+    return "Computer won!" if TERMS[:"#{computer}"].include?("#{user}")
+    return "It's a tie!"
+  # end
+end 
+
 prompt("Hello, let's play a game.")
 
 loop do # main loop
@@ -45,15 +80,9 @@ loop do # main loop
     prompt(display_invalid_prompt)
   end
 
-  puts"User chose: #{user_choice.capitalize} and Computer chose #{computer_input.capitalize}:"
-  
-  if TERMS[:"#{user_choice}"].include?("#{computer_input}")
-    puts "Player won!"
-  elsif TERMS[:"#{computer_input}"].include?("#{user_choice}")
-    puts "Computer won!"
-  else
-    puts "It's a tie!"
-  end
+  prompt("User chose: #{user_choice.capitalize} and Computer chose #{computer_input.capitalize}:")
+
+  prompt(display_results(user_choice, computer_input))
 
   prompt("Wanna play again? (y to play again)")
   answer = gets.chomp
@@ -61,5 +90,3 @@ loop do # main loop
 end
 
 prompt("Thank you for playing")
-
-# Keep score of the player's and computer's wins. When either the player or computer reaches five wins, the match is over, and the winning player becomes the grand winner. Don't add your incrementing logic to display_results. Keep your methods simple; they should perform one logical task — no more, no less.
