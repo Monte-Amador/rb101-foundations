@@ -1,48 +1,77 @@
-VALID_CHOICES = ['Rock', 'Paper', 'Scissors']
+VALID_CHOICES = {
+  rock: ['r', 'rock'],
+  paper: ['p', 'paper'],
+  scissors: ['sc', 'scissors'],
+  lizard: ['l', 'lizard'],
+  spock: ['sp', 'spock']
+}
 
-VALID_ABBREVIATIONS = ['R', 'P', 'S']
-
-TERMS = {rock: ['scissors', 'lizard'], paper: ['rock', 'spock'], scissors: ['paper', 'lizard'], lizard: ['spock', 'paper'], spock: ['scissors', 'rock']}
+GAME_TERMS = {
+  rock: ['scissors', 'lizard'],
+  paper: ['rock', 'spock'],
+  scissors: ['paper', 'lizard'],
+  lizard: ['spock', 'paper'],
+  spock: ['scissors', 'rock']
+}
 
 def prompt(message)
   Kernel.puts(">> #{message}")
 end
 
-def winner(user_input, computer_input)
-  if TERMS[:"#{user_input}".downcase].include?(computer_input.downcase)
-    prompt("Player won!")
-  elsif TERMS[:"#{computer_input}".downcase].include?(user_input.downcase)
-    prompt("Computer won!")
-  else
-    prompt("It's a tie!")
-  end
+def validate_input(str)
+  match = VALID_CHOICES.select { |_key, val| val.include?(str) }
+  match.to_a().flatten().first().to_s if match != {}
 end
 
-prompt("Welcome to #{VALID_CHOICES.join(', ')}!")
+def display_valid_choices
+  titles = VALID_CHOICES.select { |_k, v| v }
+  choices = titles.to_a.map { |arr| arr[1][1].capitalize }
+  choices.join(', ')
+end
+
+def display_invalid_prompt
+  <<-MSG
+  Sorry, that was not a valid choice.
+  Please choose one of the following:
+  #{display_valid_choices}
+  (hint: you can also use the abbreviations:
+  'R', 'P', 'SC', 'L', 'SP' respectively).
+  MSG
+end
+
+def display_results(user, computer)
+  return "Player won!" if GAME_TERMS[:"#{user}"].include?("#{computer}")
+  return "Computer won!" if GAME_TERMS[:"#{computer}"].include?("#{user}")
+  "It's a tie!"
+end
+
+prompt("Hello, let's play a game.")
+score = { player: 0, computer: 0 }
+
 loop do # main loop
   user_choice = ''
-  
-  loop do # verification loop
-    prompt("Please choose one: #{VALID_CHOICES.join(', ')}.")
-    user_choice = Kernel.gets().chomp().capitalize()
-    puts user_choice.inspect
-    if VALID_CHOICES.include?(user_choice) || VALID_ABBREVIATIONS.include?(user_choice)
-
-      break
-    else
-      prompt("Sorry, that is not a valid choice, let's try again.")
-    end
+  computer_input = GAME_TERMS.to_a.flatten.sample()
+  loop do # validation loop
+    prompt("Please choose one: #{display_valid_choices}")
+    user_input = gets.chomp.downcase
+    user_choice = validate_input(user_input)
+    break unless user_choice.nil?
+    prompt(display_invalid_prompt)
   end
 
-  computer_choice = VALID_CHOICES.sample()
-  
-  prompt("You chose \"#{user_choice}\" and the computer chose \"#{computer_choice}\":")
+  prompt("You chose: #{user_choice.capitalize} and the computer chose #{computer_input.capitalize}:")
 
-  winner(user_choice, computer_choice)
+  prompt(display_results(user_choice, computer_input))
+
+  score[:player] += 1 if display_results(user_choice, computer_input).include?("Player")
+  score[:computer] += 1 if display_results(user_choice, computer_input).include?("Computer")
+  score.each { |key, val| prompt("#{key} => #{val}") }
   
-  prompt("Would you like to play again? (y to play again)")
-  answer = Kernel.gets().chomp().downcase
-  break unless answer == 'y'
+  break if (score[:player] == 5) || (score[:computer] == 5)
+  prompt("Wanna play again? (y to play again)")
+  answer = gets.chomp
+  break unless answer.downcase == "y"
 end
 
-prompt("Okay, thanks for playing! Come again soon.")
+prompt("Thank you for playing, the final score is: ")
+score.each { |key, val| prompt("#{key} => #{val}") }
