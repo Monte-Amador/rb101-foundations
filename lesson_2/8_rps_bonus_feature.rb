@@ -40,18 +40,28 @@ def display_invalid_prompt
 end
 
 def display_results(user, computer)
-  return "Player won!" if GAME_TERMS[:"#{user}"].include?("#{computer}")
-  return "Computer won!" if GAME_TERMS[:"#{computer}"].include?("#{user}")
-  "It's a tie!"
+  if GAME_TERMS[:"#{user}"].include?(computer.to_s)
+    return "Player won!"
+  elsif GAME_TERMS[:"#{computer}"].include?(user.to_s)
+    return "Computer won!"
+  else
+    "It's a tie!"
+  end
+end
+
+def update_score(score_hash, results_string)
+  score_hash[:player] +=1 if results_string.include?("Player")
+  score_hash[:computer] +=1 if results_string.include?("Computer")
 end
 
 prompt("Hello, let's play a game.")
 score = { player: 0, computer: 0 }
 
-loop do # main loop
+loop do # main
   user_choice = ''
   computer_input = GAME_TERMS.to_a.flatten.sample()
-  loop do # validation loop
+  
+  loop do # validation
     prompt("Please choose one: #{display_valid_choices}")
     user_input = gets.chomp.downcase
     user_choice = validate_input(user_input)
@@ -59,19 +69,30 @@ loop do # main loop
     prompt(display_invalid_prompt)
   end
 
-  prompt("You chose: #{user_choice.capitalize} and the computer chose #{computer_input.capitalize}:")
+  summary_prompt = <<~MSG
+  USER chose: #{user_choice.capitalize}
+  and the COMPUTER chose: #{computer_input.capitalize}
+  MSG
+  
+  prompt(summary_prompt)
 
-  prompt(display_results(user_choice, computer_input))
-
-  score[:player] += 1 if display_results(user_choice, computer_input).include?("Player")
-  score[:computer] += 1 if display_results(user_choice, computer_input).include?("Computer")
-  score.each { |key, val| prompt("#{key} => #{val}") }
+  sleep(1)
+  results_output = display_results(user_choice, computer_input)
+  update_score(score, results_output)
+  
+  if (score[:player] < 5) && (score[:computer] < 5)
+    prompt(results_output)
+    prompt("Current Scores:")
+    score.each { |key, val| prompt("#{key} => #{val}") }
+  end
   
   break if (score[:player] == 5) || (score[:computer] == 5)
-  prompt("Wanna play again? (y to play again)")
+  prompt("Continue? (y to play another round)")
   answer = gets.chomp
-  break unless answer.downcase == "y"
+  break unless answer.downcase == "y" || answer.downcase == "yes"
 end
 
+prompt("User won the match!") if score[:player] == 5
+prompt("Computer won the match!") if score[:computer] == 5
 prompt("Thank you for playing, the final score is: ")
 score.each { |key, val| prompt("#{key} => #{val}") }
