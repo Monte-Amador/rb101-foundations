@@ -41,17 +41,17 @@ end
 
 def display_results(user, computer)
   if GAME_TERMS[:"#{user}"].include?(computer.to_s)
-    return "Player won!"
+    "Player won!"
   elsif GAME_TERMS[:"#{computer}"].include?(user.to_s)
-    return "Computer won!"
+    "Computer won!"
   else
     "It's a tie!"
   end
 end
 
 def update_score(score_hash, results_string)
-  score_hash[:player] +=1 if results_string.include?("Player")
-  score_hash[:computer] +=1 if results_string.include?("Computer")
+  score_hash[:player] += 1 if results_string.include?("Player")
+  score_hash[:computer] += 1 if results_string.include?("Computer")
 end
 
 prompt("Hello, let's play a game.")
@@ -60,7 +60,6 @@ score = { player: 0, computer: 0 }
 loop do # main
   user_choice = ''
   computer_input = GAME_TERMS.to_a.flatten.sample()
-  
   loop do # validation
     prompt("Please choose one: #{display_valid_choices}")
     user_input = gets.chomp.downcase
@@ -73,7 +72,6 @@ loop do # main
   USER chose: #{user_choice.capitalize}
   and the COMPUTER chose: #{computer_input.capitalize}
   MSG
-  
   prompt(summary_prompt)
 
   sleep(1)
