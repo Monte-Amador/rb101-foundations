@@ -98,7 +98,7 @@ loop do # main
   and the COMPUTER chose: #{computer_input.capitalize}
   MSG
   prompt(summary_prompt)
-  
+
   results_output = results(user_choice, computer_input)
   update_score(score, results_output)
   if (score[:player] < 5) && (score[:computer] < 5)
@@ -113,8 +113,8 @@ loop do # main
   or any other key to end).
   MSG
   prompt(invite_to_continue_prompt)
-  
-  answer = gets().chomp()
+
+  answer = gets.chomp
   break unless answer.downcase == "y" || answer.downcase == "yes"
 end
 
