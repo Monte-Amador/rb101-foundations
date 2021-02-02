@@ -98,26 +98,20 @@ loop do # main
   and the COMPUTER chose: #{computer_input.capitalize}
   MSG
   prompt(summary_prompt)
-
-  sleep(1)
   results_output = results(user_choice, computer_input)
   update_score(score, results_output)
-  
   if (score[:player] < 5) && (score[:computer] < 5)
     prompt(results_output)
     prompt("Current Scores:")
     score.each { |key, val| prompt("#{key} => #{val}") }
   end
-  
   break if (score[:player] == 5) || (score[:computer] == 5)
-  
   invite_to_continue_prompt = <<~MSG
   Shall we continue #{name}?
-  (Press y to play another round 
+  (Press y to play another round
   or any other key to end).
   MSG
   prompt(invite_to_continue_prompt)
-  
   answer = gets.chomp
   break unless answer.downcase == "y" || answer.downcase == "yes"
 end
