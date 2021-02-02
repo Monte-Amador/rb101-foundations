@@ -39,7 +39,7 @@ def display_invalid_prompt
   MSG
 end
 
-def display_results(user, computer)
+def results(user, computer)
   if GAME_TERMS[:"#{user}"].include?(computer.to_s)
     "Player won!"
   elsif GAME_TERMS[:"#{computer}"].include?(user.to_s)
@@ -54,9 +54,33 @@ def update_score(score_hash, results_string)
   score_hash[:computer] += 1 if results_string.include?("Computer")
 end
 
-prompt("Hello, let's play a game.")
-score = { player: 0, computer: 0 }
+def clear_screen
+  system('clear') || system('cls')
+end
 
+welcome_prompt = <<~MSG
+Welcome to #{display_valid_choices}!
+Please enter your name:
+MSG
+prompt(welcome_prompt)
+
+name = ''
+loop do
+  name = Kernel.gets().chomp().strip()
+  if name.empty?()
+    prompt("Hmmm, sorry, I didn't get that. Please enter a valid name.")
+  else
+    break
+  end
+end
+
+begin_game_prompt = <<MSG
+Alright then #{name},
+let's play a match, best of 5 wins!!!
+MSG
+prompt(begin_game_prompt)
+
+score = { player: 0, computer: 0 }
 loop do # main
   user_choice = ''
   computer_input = GAME_TERMS.to_a.flatten.sample()
@@ -64,18 +88,19 @@ loop do # main
     prompt("Please choose one: #{display_valid_choices}")
     user_input = gets.chomp.downcase
     user_choice = validate_input(user_input)
+    clear_screen
     break unless user_choice.nil?
     prompt(display_invalid_prompt)
   end
 
   summary_prompt = <<~MSG
-  USER chose: #{user_choice.capitalize}
+  #{name} chose: #{user_choice.capitalize}
   and the COMPUTER chose: #{computer_input.capitalize}
   MSG
   prompt(summary_prompt)
 
   sleep(1)
-  results_output = display_results(user_choice, computer_input)
+  results_output = results(user_choice, computer_input)
   update_score(score, results_output)
   
   if (score[:player] < 5) && (score[:computer] < 5)
@@ -85,12 +110,19 @@ loop do # main
   end
   
   break if (score[:player] == 5) || (score[:computer] == 5)
-  prompt("Continue? (y to play another round)")
+  
+  invite_to_continue_prompt = <<~MSG
+  Shall we continue #{name}?
+  (Press y to play another round 
+  or any other key to end).
+  MSG
+  prompt(invite_to_continue_prompt)
+  
   answer = gets.chomp
   break unless answer.downcase == "y" || answer.downcase == "yes"
 end
 
-prompt("User won the match!") if score[:player] == 5
+prompt("#{name} won the match!") if score[:player] == 5
 prompt("Computer won the match!") if score[:computer] == 5
-prompt("Thank you for playing, the final score is: ")
+prompt("Thank you for playing #{name}, the final score is: ")
 score.each { |key, val| prompt("#{key} => #{val}") }
