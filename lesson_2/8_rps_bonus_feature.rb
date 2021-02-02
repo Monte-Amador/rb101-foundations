@@ -20,12 +20,12 @@ end
 
 def validate_input(str)
   match = VALID_CHOICES.select { |_key, val| val.include?(str) }
-  match.to_a().flatten().first().to_s if match != {}
+  match.to_a().flatten().first().to_s() if match != {}
 end
 
 def display_valid_choices
   titles = VALID_CHOICES.select { |_k, v| v }
-  choices = titles.to_a.map { |arr| arr[1][1].capitalize }
+  choices = titles.to_a().map { |arr| arr[1][1].capitalize }
   choices.join(', ')
 end
 
@@ -68,7 +68,7 @@ name = ''
 loop do
   name = Kernel.gets().chomp().strip()
   if name.empty?()
-    prompt("Hmmm, sorry, I didn't get that. Please enter a valid name.")
+    prompt("Hmmm, sorry, please enter a valid name.")
   else
     break
   end
@@ -83,13 +83,13 @@ prompt(begin_game_prompt)
 score = { player: 0, computer: 0 }
 loop do # main
   user_choice = ''
-  computer_input = GAME_TERMS.to_a.flatten.sample()
+  computer_input = GAME_TERMS.to_a().flatten().sample()
   loop do # validation
     prompt("Please choose one: #{display_valid_choices}")
-    user_input = gets.chomp.downcase
+    user_input = gets().chomp().downcase
     user_choice = validate_input(user_input)
     clear_screen
-    break unless user_choice.nil?
+    break unless user_choice.nil?()
     prompt(display_invalid_prompt)
   end
 
@@ -98,27 +98,23 @@ loop do # main
   and the COMPUTER chose: #{computer_input.capitalize}
   MSG
   prompt(summary_prompt)
-
-  sleep(1)
+  
   results_output = results(user_choice, computer_input)
   update_score(score, results_output)
-  
   if (score[:player] < 5) && (score[:computer] < 5)
     prompt(results_output)
     prompt("Current Scores:")
     score.each { |key, val| prompt("#{key} => #{val}") }
   end
-  
   break if (score[:player] == 5) || (score[:computer] == 5)
-  
   invite_to_continue_prompt = <<~MSG
   Shall we continue #{name}?
-  (Press y to play another round 
+  (Press y to play another round
   or any other key to end).
   MSG
   prompt(invite_to_continue_prompt)
   
-  answer = gets.chomp
+  answer = gets().chomp()
   break unless answer.downcase == "y" || answer.downcase == "yes"
 end
 
