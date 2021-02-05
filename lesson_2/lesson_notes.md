@@ -7,8 +7,7 @@
 
 - Precedence: 
   In short, precedence determines the meaning of an expression.
-  Another way to think of precedence is that it controls the order of evaluation.
-  It's safer to think of precedence as the mechanism used by Ruby to determine which operands get passed to each operator.
+  Another way to think of precedence is that it controls the order of evaluation. Operations involving operators with high precedence get evaluated before operations involving low precedence. When two operations involve operators of the same precedence, the operations occur left\-to\-right (or right\-to\-left in some cases). **However**, thinking of precedence in this way can sometimes lead to unexpected results when using the `||` and `&&` short\-circuit operators or the ternary operator (`a ? b : c`). It's safer to think of precedence as the mechanism used by Ruby to determine which operands get passed to each operator.
 
 
 
