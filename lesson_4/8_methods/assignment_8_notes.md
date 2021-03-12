@@ -111,6 +111,14 @@ nil. To show the differenece using the same example, change the `puts`
 expression to a `p` expression which will return the value of `num` and you
 will get `[1, 2, 3]` 
 
+To further clarify your understanding of these methods and how they work, use
+the following table as a reference:
+
+| Method   |      Action      |  Considers the return value of the block? | Returns a new collection from the method? | Length of the returned collection |
+|--------------|--------------|--------------|--------------|--------------|
+| `each` |  Iteration | No | No, it returns the original | Length of original |
+| `select` |    Selection   | Yes, its truthiness | Yes | Length of original or less |
+| `map` | Transformation | Yes | Yes | Length of original |
 
 [Launch School - an online school for Software Engineers](https://launchschool.com/lessons/85376b6d/assignments/3034b4e0)
 
