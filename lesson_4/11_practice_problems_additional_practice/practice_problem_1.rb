@@ -25,3 +25,4 @@ flintstones.each_with_index do |value, index|
   new_hash[value] = index
 end
 
+p new_hash

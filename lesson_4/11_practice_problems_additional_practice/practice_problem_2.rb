@@ -10,4 +10,4 @@ ages.each do |_key, value|
   sum_of_ages += value
 end
 
-sum_of_ages
+p sum_of_ages
