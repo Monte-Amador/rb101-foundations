@@ -334,3 +334,46 @@ These methods each utilize the block's return value in their own way. In the
 case of `each`, the return value of the block is simply ignored. Before
 moving forward, it is crucial to understand how exactly these methods use the
 block's return value to perform their intended task. 
+
+# More Methods
+Most of this seems like common sense by now, but there are still a lot of
+information here that needs to be thoroughly understood. Here's a few that
+stand out below:
+
+When using the `#include?` method, know that it returns the first item if no
+argument is provided. If it does include an argument then it returns true:
+
+```ruby
+[1, 2, 3].include?(1)
+# => true
+ ```
+But one thing to remember is that calling `#include?` on a hash only checks
+for the hash's key, not the values.
+
+> In fact, `Hash#include?` is essentially an alias for `Hash#key?` or `Hash#has_key?`. In practice, Rubyists would usually prefer these methods over `include?` as they make the intention more explicit.
+
+#### `Enumerable#partition`
+
+`partition` divides up elements in the current collection into two collections, depending on the block's return value. For example:
+
+```ruby
+[1, 2, 3].partition do |num|
+  num.odd?
+end
+# => [[1, 3], [2]]
+ ```
+Method documentation will normally include:
+
+- One or more method signatures (which will indicate whether the method takes
+  arguments and/ or a block and what it returns)
+- A brief description of how the method is used, often covering different use
+  cases
+- Some code examples, again usually covering various use cases
+
+By taking the time to read a method's documentation, we can gain a more
+thorough understanding of how that method works. We're then able to move
+forward knowing things like:
+
+- Whether the method takes a block
+- How it handles the block's return value
+- What the method itself returns

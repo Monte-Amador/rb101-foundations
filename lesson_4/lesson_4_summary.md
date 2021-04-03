@@ -10,10 +10,13 @@ programming in general.
 
 Some particularly important points to remember are:
 
-- [ ] Some of the most commonly used iterative methods are `each`, `select`,
+- [x] Some of the most commonly used iterative methods are `each`, `select`,
   and `map`. It's important to understand the difference between these
 methods.
-
+*The main differences are based on their return values with each ignoring the
+return block and instead returning the initial expression, select returning
+the block, and map using the return value of the block to make a
+transformation on the elements.*
 
 
 - [ ] Methods called on Ruby collection objects are often used with a block;
