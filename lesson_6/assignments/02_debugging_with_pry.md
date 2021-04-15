@@ -8,11 +8,6 @@ We recommend that you watch this optional video which takes a more in-depth look
 
 **Note:** If possible, watch this video in full-screen mode to better read the provided code examples.
 
-To view this video please enable JavaScript, and consider upgrading to a web browser that
-
-Download: [HD](moz-extension://dkq85ftleqhzg.cloudfront.net/tech_talks/debugging_with_pry.mp4)
-
-You marked this topic or exercise as completed.
-
+![](file:///Users/monte/Projects/launch-school/rb101-programming-foundations/lesson_6/video-tutorials/debugging_with_pry.mp4)
 
 [Source](https://launchschool.com/lessons/de05b300/assignments/f9bd863d)

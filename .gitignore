@@ -1,4 +1,5 @@
 .DS_Store
 *.swp
-# lesson_6/walk-along-videos/*
-lesson_6/walk-along-videos/*
+**/video*
+*.mp4
+*.mov
