@@ -1,0 +1,12 @@
+# The following will only work if you have `git lfs install` up and running globally for your repos. Git LFS for large file tracking
+
+# See this [page](https://confluence.atlassian.com/bitbucket/use-git-lfs-with-bitbucket-828781636.html#UseGitLFSwithBitbucket-2.InstalltheGitLFSclientlocally) for more details and also make sure your server supports it.
+
+*.psd filter=lfs diff=lfs merge=lfs -text
+*.indd filter=lfs diff=lfs merge=lfs -text
+*.ai filter=lfs diff=lfs merge=lfs -text
+*.afdesign filter=lfs diff=lfs merge=lfs -text
+*.afphoto filter=lfs diff=lfs merge=lfs -text
+*.afpub filter=lfs diff=lfs merge=lfs -text
+*.sql filter=lfs diff=lfs merge=lfs -text
+*.pdf filter=lfs diff=lfs merge=lfs -text
