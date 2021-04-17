@@ -77,15 +77,15 @@ def joiner(arr, del=', ', conj='or')
     string_output = ''
     case arr.size
     when 0 then ''
-    when 1 then string_output << "#{arr[0]}"
-    when 2 
-      string_output << ("#{arr[0]}" + ' ' + "#{conj}" + ' ' + "#{arr[1]}")
+    when 1 then string_output << arr[0].to_s
+    when 2
+      string_output << (arr[0].to_s + ' ' + conj.to_s + ' ' + arr[1].to_s)
     else
       arr.each_with_index do |item, idx|
         if idx < (arr.size - 1)
-          string_output << ("#{item}" + "#{del}")
+          string_output << (item.to_s + del.to_s)
         else
-          string_output << ("#{conj}" + ' ' + "#{item}")
+          string_output << (conj.to_s + ' ' + item.to_s)
         end
       end 
     end
