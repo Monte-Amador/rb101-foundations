@@ -54,30 +54,6 @@ loop do # match loop start/end game
   response = gets.chomp.downcase
   break if response == 'n'
 end
-
-
-loop do 
-  current_score = initialize_score
-  loop do # each round
-    board = initialize_board # setup base board
-    
-    # loop do # inner loop :  breaks out of loop if someone won or tie
-    #   display_board(board) # display board
-    #   prompt "Current Score: #{current_score}"
-    #   player_places_piece!(board) # player makes choice
-    #   break if someone_won?(board) || board_full?(board) 
-
-    #   computer_places_piece!(board) # computer makes choice
-    #   break if someone_won?(board) || board_full?(board)
-    # end
-    # display_board(board)
-    
-
-  end 
-end
-# prompt 'Play again? (Y/N)'
-# response = gets.chomp.downcase
-# break if response == 'n'
 prompt 'Thanks for playing Tic Tac Toe. Good-bye!'
 
 
