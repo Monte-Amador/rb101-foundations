@@ -18,7 +18,7 @@ end
 
 # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
 def display_board(brd)
-  clear_screen
+  # clear_screen
   puts ''
   puts '     |     |'
   puts "  #{brd[1]}  |  #{brd[2]}  |  #{brd[3]}"
@@ -39,6 +39,10 @@ def initialize_board
   new_board = {}
   (1..9).each { |num| new_board[num] = INITIAL_MARKER }
   new_board
+end
+
+def initialize_score
+  { player: 0, computer: 0 }
 end
 
 def validate_joiner_argument(arr)
@@ -65,14 +69,10 @@ def joiner(arr, del = ', ', conj = 'or')
     end
     string_output
   else
-    'Sorry, you need to provide an array as an argument.'
+    'Sorry, please provide an array as an argument.'
   end
 end
 # rubocop:enable Metrics/MethodLength
-
-def initialize_score
-  { player: 0, computer: 0 }
-end
 
 def update_score(score, brd)
   score[:player] += 1 if detect_winner(brd).include?('Player')
@@ -81,6 +81,29 @@ end
 
 def empty_squares(brd)
   brd.keys.select { |num| brd[num] == INITIAL_MARKER }
+end
+
+
+def detect_threat(brd, valid_squares)
+  # save all player markers to array
+  current_squares_player = brd.each_with_object([]) do |(key, value), arr|
+    arr << key if value == PLAYER_MARKER 
+  end
+  # identify any potential threats by comparing players squares to 
+  # WINNING_LINES constant variable
+  potential_threats = WINNING_LINES.each_with_object([]) do |line, arr|
+    arr << (line - current_squares_player)
+  end
+  
+  # strip empty arrays from return value
+  potential_threats.keep_if { |arr| arr.size == 1 }
+  
+  if potential_threats.empty? == false
+    threats = potential_threats.flatten
+    threats.keep_if {|num| valid_squares.include?(num)}
+    # implicit return for single array containng valid threats
+    threats if threats.empty? == false
+  end
 end
 
 def player_places_piece!(brd)
@@ -92,14 +115,36 @@ def player_places_piece!(brd)
 
     prompt 'Sorry, that is not a valid choice'
   end
-  # BUG? prompt 'square.to_s'
   brd[square] = PLAYER_MARKER
 end
 
-def computer_places_piece!(brd)
-  square = empty_squares(brd).sample
-  brd[square] = COMPUTER_MARKER
+def computer_places_piece!(brd, slot)
+ if detect_threat(brd, slot) != nil
+    puts "threat detected!"
+    square = detect_threat(brd, slot).sample
+  else
+    puts "no threat detected, choosing a random number."
+    square = slot.sample
+  end
+  brd[square] = COMPUTER_MARKER if square != nil
 end
+
+# def computer_places_piece!(brd)
+# #  square = ''
+# #   if detect_threat(brd) != nil
+# #     square = detect_threat(brd).sample    
+# #     puts "threat:" 
+# #     puts square
+# #     brd[square] = COMPUTER_MARKER
+# #     p brd
+# #   else
+#     square = empty_squares(brd).sample  
+#     puts "random:" 
+#     puts square
+#     brd[square] = COMPUTER_MARKER
+#     p brd
+# #  end
+# end
 
 def board_full?(brd)
   empty_squares(brd).empty?
@@ -135,7 +180,7 @@ loop do
       player_places_piece!(board)
       break if someone_won?(board) || board_full?(board)
 
-      computer_places_piece!(board)
+      computer_places_piece!(board,empty_squares(board))
       break if someone_won?(board) || board_full?(board)
     end
     display_board(board)
@@ -146,7 +191,7 @@ loop do
     else
       prompt "It's a tie!"
     end
-    sleep(2)
+    # sleep(2)
   end
   next unless current_score.value?(5)
 
