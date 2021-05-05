@@ -1,12 +1,10 @@
-# rubocop:disable Style/FrozenStringLiteralComment
 WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
                 [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # cols
                 [[1, 5, 9], [3, 5, 7]] # diagonals
-# rubocop:enable Style/FrozenStringLiteralComment
 
-INITIAL_MARKER = ' '.freeze
-PLAYER_MARKER = 'X'.freeze
-COMPUTER_MARKER = 'O'.freeze
+INITIAL_MARKER = ' '
+PLAYER_MARKER = 'X'
+COMPUTER_MARKER = 'O'
 
 def clear_screen
   system('clear') || system('cls')
@@ -16,7 +14,6 @@ def prompt(msg)
   puts "=> #{msg}"
 end
 
-# rubocop:disable Metrics/MethodLength, Metrics/AbcSize
 def display_board(brd)
   puts ''
   puts '     |     |'
@@ -32,7 +29,6 @@ def display_board(brd)
   puts '     |     |'
   puts ''
 end
-# rubocop:enable Metrics/MethodLength, Metrics/AbcSize
 
 def initialize_board
   new_board = {}
@@ -48,7 +44,6 @@ def validate_join_array(arr)
   !!arr.is_a?(Array)
 end
 
-# rubocop:disable Metrics/MethodLength
 def join(arr, delimeter = ', ', conjunction = 'or')
   if validate_join_array(arr)
     string_output = ''
@@ -60,7 +55,7 @@ def join(arr, delimeter = ', ', conjunction = 'or')
     else
       arr.each_with_index do |item, idx|
         string_output << if idx < (arr.size - 1)
-                           "#{item} #{delimeter}"
+                           "#{item}#{delimeter}"
                          else
                            "#{conjunction} #{item}"
                          end
@@ -89,41 +84,81 @@ def player_squares(brd)
   player_selected_squares
 end
 
-def potential_win(player_range)
-  potential_threats = WINNING_LINES.each_with_object([]) do |line, arr|
-    arr << (line - player_range)
-  end 
-  potential_threats.keep_if { |arr| arr.size == 1 }
+def computer_squares(brd)
+  computer_selected_squares = brd.each_with_object([]) do |(key, value), arr|
+    arr << key if value == COMPUTER_MARKER 
+  end
+  computer_selected_squares
 end
 
-def valid_threats(threat_range, valid_squares)
+def needs_attention(player_range)
+  attention = WINNING_LINES.each_with_object([]) do |line, arr|
+    arr << (line - player_range)
+  end 
+  attention.keep_if { |arr| arr.size == 1 }
+end
+
+def valid_offense(win_range, valid_squares)
+  if win_range.empty? == false
+    win = win_range.flatten
+    win.keep_if {|num| valid_squares.include?(num)}
+    win if win.empty? == false
+  end
+end
+
+def valid_defense(threat_range, valid_squares)
   if threat_range.empty? == false
     threats = threat_range.flatten
     threats.keep_if {|num| valid_squares.include?(num)}
     threats if threats.empty? == false
   end
 end
+
+def detect_offense(brd, valid_squares)
+  valid_offense(needs_attention(computer_squares(brd)), valid_squares)
+end
  
-def detect_threat(brd, valid_squares) 
-  # returns nil if no valid threats
-  valid_threats(potential_win(player_squares(brd)), valid_squares)
+def detect_defense(brd, valid_squares) 
+  valid_defense(needs_attention(player_squares(brd)), valid_squares)
+end
+
+def available_choices(arr)
+  message = <<~MSG
+  Choose a square
+  #{join(arr)}
+  MSG
+  prompt message
+end
+
+def invalid_choice
+  message = <<~MSG
+  Sorry, 
+  that is not a valid choice
+  MSG
+  prompt message
 end
 
 def player_places_piece!(brd)
   square = ''
   loop do
-    prompt "Choose a square #{join(empty_squares(brd))}"
+    available_choices(empty_squares(brd))
     square = gets.chomp.to_i
     break if empty_squares(brd).include?(square)
-    prompt 'Sorry, that is not a valid choice'
+    invalid_choice
   end
   brd[square] = PLAYER_MARKER
 end
 
 def computer_places_piece!(brd, valid_squares)
- if detect_threat(brd, valid_squares) != nil
-    puts "threat detected! squares #{detect_threat(brd,valid_squares)}"
-    square = detect_threat(brd, valid_squares).sample
+  if detect_offense(brd,valid_squares) != nil
+    puts "win detected! #{detect_offense(brd, valid_squares)}"
+    square = detect_offense(brd,valid_squares).sample
+  elsif detect_defense(brd, valid_squares) != nil
+    puts "threat detected! squares #{detect_defense(brd,valid_squares)}"
+    square = detect_defense(brd, valid_squares).sample
+  elsif valid_squares.include?(5)
+    puts "square 5 is available!"
+    square = 5 
   else
     puts "no threat detected, choosing a random number."
     square = valid_squares.sample
@@ -164,29 +199,77 @@ def display_score(score)
   prompt(score)
 end
 
-def round_loop(brd,score)
- loop do
+def first_player(user_input, brd, random_user)  
+  case user_input
+  when 'p'
+    player_places_piece!(brd)
+  when 'c'
+    computer_places_piece!(brd, empty_squares(brd))
+  when 'r'
+    
+    if random_user != ''
+      computer_choice = random_user
+    else
+      arr = ['p', 'c']
+      computer_choice = arr.sample  
+      random_user << computer_choice
+    end
+
+    case computer_choice 
+    when 'p'
+      player_places_piece!(brd)
+    when 'c'
+      computer_places_piece!(brd, empty_squares(brd))
+    end
+  end  
+end
+
+def second_player(user_input, brd, random_user) 
+  user_input = random_user if random_user != ''
+  case user_input 
+  when 'p'
+    computer_places_piece!(brd, empty_squares(brd))
+  when 'c' 
+    player_places_piece!(brd)
+  end
+end
+
+def update_board(brd)
   clear_screen
-   display_board(brd)
-   display_score(score)
-   player_places_piece!(brd)
-   break if someone_won?(brd) || board_full?(brd)
-   computer_places_piece!(brd,empty_squares(brd))
-   break if someone_won?(brd) || board_full?(brd)
-   sleep(1)
-  clear_screen
- end
-   if someone_won?(brd)
-     clear_screen
-     display_board(brd)
-     prompt "#{detect_winner(brd)} won!"
-     update_score(score, brd)
-   else
-     clear_screen
-     display_board(brd)
-     prompt "It's a tie!"
-   end
-   sleep(3)
+  display_board(brd)
+end
+
+
+def display_round_standings(brd, score)
+  if someone_won?(brd)
+    clear_screen
+    display_board(brd)
+    prompt "#{detect_winner(brd)} won!"
+    update_score(score, brd)
+    sleep(2)
+  else
+    clear_screen
+    display_board(brd)
+    prompt "It's a tie!"
+    sleep(2)
+  end
+end
+
+def round_loop(brd, score, user_input, random_user) 
+  loop do
+    clear_screen
+    display_board(brd)
+    display_score(score)
+    first_player(user_input, brd, random_user)
+    update_board(brd) 
+    break if someone_won?(brd) || board_full?(brd)
+    second_player(user_input, brd, random_user)
+    update_board(brd) 
+    break if someone_won?(brd) || board_full?(brd)
+    sleep(1)
+    clear_screen
+  end
+  display_round_standings(brd, score)
 end
 
 def welcome_message
@@ -194,6 +277,16 @@ def welcome_message
   Play Tic Tac Toe against the computer!
   MSG
   prompt(welcome_prompt)
+end
+
+def who_goes_first
+  who = <<~MSG
+  Who would you like to go first?
+  (p)layer, (c)omputer, or (r)andom
+  (valid choices are p,c, or r)
+  MSG
+  prompt who
+  gets.chomp
 end
 
 def match_rules(rounds = 5)
@@ -204,21 +297,32 @@ def match_rules(rounds = 5)
   prompt(match_params)
 end
 
-loop do # initiate game
+player1 = ''
+
+# initiate game
+loop do 
   welcome_message
+
+  user_choice = who_goes_first 
+
   prompt "How many rounds would you like to play?"
   match_round = gets.chomp.to_i
   match_rules(match_round)
-  sleep(5)
+  sleep(3)
   current_score = initialize_score 
-  loop do # initiate match
+  
+  # initiate match
+  loop do 
     board = initialize_board
-    round_loop(board,current_score)
+    round_loop(board, current_score, user_choice, player1)
     break if current_score.value?(match_round)
-  end # end match
+  end 
+  # end match
+  player1 = '' 
   prompt "Game over, match win goes to: #{match_winner?(current_score,match_round)}!"
   prompt 'Play again?(Y/N)'
   reply = gets.chomp.downcase
   break if reply == 'n'
 end
 prompt 'Thanks for playing Tic Tac Toe. Good-bye!'
+

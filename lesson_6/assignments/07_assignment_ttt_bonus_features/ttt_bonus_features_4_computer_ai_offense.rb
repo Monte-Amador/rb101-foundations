@@ -60,7 +60,7 @@ def join(arr, delimeter = ', ', conjunction = 'or')
     else
       arr.each_with_index do |item, idx|
         string_output << if idx < (arr.size - 1)
-                           "#{item} #{delimeter}"
+                           "#{item}#{delimeter}"
                          else
                            "#{conjunction} #{item}"
                          end
@@ -89,11 +89,26 @@ def player_squares(brd)
   player_selected_squares
 end
 
-def potential_win(player_range)
-  potential_threats = WINNING_LINES.each_with_object([]) do |line, arr|
+def computer_squares(brd)
+  computer_selected_squares = brd.each_with_object([]) do |(key, value), arr|
+    arr << key if value == COMPUTER_MARKER 
+  end
+  computer_selected_squares
+end
+
+def needs_attention(player_range)
+  attention = WINNING_LINES.each_with_object([]) do |line, arr|
     arr << (line - player_range)
   end 
-  potential_threats.keep_if { |arr| arr.size == 1 }
+  attention.keep_if { |arr| arr.size == 1 }
+end
+
+def valid_offense(win_range, valid_squares)
+  if win_range.empty? == false
+    win = win_range.flatten
+    win.keep_if {|num| valid_squares.include?(num)}
+    win if win.empty? == false
+  end
 end
 
 def valid_threats(threat_range, valid_squares)
@@ -103,27 +118,52 @@ def valid_threats(threat_range, valid_squares)
     threats if threats.empty? == false
   end
 end
+
+def detect_offense(brd, valid_squares)
+  # returns nil if no valid wins
+  valid_offense(needs_attention(computer_squares(brd)), valid_squares)
+end
  
-def detect_threat(brd, valid_squares) 
+def detect_defense(brd, valid_squares) 
   # returns nil if no valid threats
-  valid_threats(potential_win(player_squares(brd)), valid_squares)
+  valid_threats(needs_attention(player_squares(brd)), valid_squares)
+end
+
+def available_choices(arr)
+  message = <<~MSG
+  Choose a square
+  #{join(arr)}
+  MSG
+  prompt message
+end
+
+def invalid_choice
+  message = <<~MSG
+  Sorry, 
+  that is not a valid choice
+  MSG
+  prompt message
 end
 
 def player_places_piece!(brd)
   square = ''
   loop do
-    prompt "Choose a square #{join(empty_squares(brd))}"
+    available_choices(empty_squares(brd))
     square = gets.chomp.to_i
     break if empty_squares(brd).include?(square)
-    prompt 'Sorry, that is not a valid choice'
+    invalid_choice
+    #prompt 'Sorry, that is not a valid choice'
   end
   brd[square] = PLAYER_MARKER
 end
 
 def computer_places_piece!(brd, valid_squares)
- if detect_threat(brd, valid_squares) != nil
-    puts "threat detected! squares #{detect_threat(brd,valid_squares)}"
-    square = detect_threat(brd, valid_squares).sample
+  if detect_offense(brd,valid_squares) != nil
+    puts "win detected! #{detect_offense(brd, valid_squares)}"
+    square = detect_offense(brd,valid_squares).sample
+  elsif detect_defense(brd, valid_squares) != nil
+    puts "threat detected! squares #{detect_defense(brd,valid_squares)}"
+    square = detect_defense(brd, valid_squares).sample
   else
     puts "no threat detected, choosing a random number."
     square = valid_squares.sample
@@ -181,12 +221,13 @@ def round_loop(brd,score)
      display_board(brd)
      prompt "#{detect_winner(brd)} won!"
      update_score(score, brd)
+     sleep(2)
    else
      clear_screen
      display_board(brd)
      prompt "It's a tie!"
    end
-   sleep(3)
+   sleep(2)
 end
 
 def welcome_message
@@ -209,7 +250,7 @@ loop do # initiate game
   prompt "How many rounds would you like to play?"
   match_round = gets.chomp.to_i
   match_rules(match_round)
-  sleep(5)
+  sleep(3)
   current_score = initialize_score 
   loop do # initiate match
     board = initialize_board

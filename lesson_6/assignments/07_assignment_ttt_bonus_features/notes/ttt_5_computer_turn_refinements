@@ -1,0 +1,27 @@
+# Computer turn refinements
+I really can't say I'm proud of the code at all at the moment, but I am proud of how I got there. All in all the logic is correct, and more importantly, it's becoming easier and therefore I'm getting the hang of it better. Muscle memory in the mind remapping stages of the day.:w
+
+
+## Refactor todos:
+- [1] Let's work on abstracting the logic that is happening within the round loop beginning with the case statement.
+
+- [2] the computer will currently always take square 5 as it's first move. this may not necessarily be a bug but it's a bit of a side-effect. Perhaps better to skip the square 5 if the board is empty first and instead opt for a random square?
+
+- [3] abstract the computer_places_piece! method and find a way to either use case (which probably won't work due to the multiple condition situation) but maybe this is a good place to look at the use of explicit return values?
+
+- [e] Add a fallback setting for the user to go first if no choice is given? Note that this would presumably work from within the calling of the method or the method itself?
+
+- [e] Change the PLAYER_MARKER and COMPUTER_MARKER to PLAYER1_MARKER and PLAYER2_MARKER respectively. This is a good idea but the objective is that `X` should always be the mark of the first player. So any changes to this should be verified to actually help the readabiltiy.
+
+- [e] check that detect_offense and detect_defense methods are okay with returning nil if no action is needed
+
+- [e] create a feedback method to abstract the if/else statement at the end of the round_loop.
+
+- [ ] add the final score to just before the good-bye message
+
+- [m] Make a validation method to test all user input and make case insensitive validation. Test for integers and also specific strings.
+
+- [m] Find the correct version of rubocop and see if I can update that with my ruby environment (install adjacently instead of overwriting it the same way I can use chruby accordingly).
+
+- [m] Need to validate an integer between 1..10 for how many rounds will be played, and also provide a fallback if the user simply presses return.
+- [h] Let's take out the redunancy of the round_loop multiple break statements and see if it's possible (it is) to break it into a single move and break statement.
