@@ -3,8 +3,8 @@ WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
                 [[1, 5, 9], [3, 5, 7]] # diagonals
 
 INITIAL_MARKER = ' '
-PLAYER_MARKER = 'X'
-COMPUTER_MARKER = 'O'
+PLAYER1_MARKER = 'X'
+PLAYER2_MARKER = 'O'
 
 ###########################################
 # Initialize Methods
@@ -83,25 +83,42 @@ def empty_squares(brd)
   brd.keys.select { |num| brd[num] == INITIAL_MARKER }
 end
 
-def player_squares(brd)
+def board_full?(brd)
+  empty_squares(brd).empty?
+end
+
+def someone_won?(brd, first_turn, second_turn)
+  !!detect_winner(brd, first_turn, second_turn)
+end
+
+def detect_winner(brd, first_turn, second_turn)
+  WINNING_LINES.each do |line|
+    return "#{first_turn}" if brd.values_at(line[0], line[1], line[2]).count(PLAYER1_MARKER) == 3
+    return "#{second_turn}" if brd.values_at(line[0], line[1], line[2]).count(PLAYER2_MARKER) == 3
+  end
+  nil
+end
+
+def match_winner?(hsh, rounds)
+  winner = hsh.select do |key, value|
+    key if value == rounds
+  end
+  winner.to_a.flatten[0].to_s.capitalize
+end
+
+
+def player_squares(brd, player_marker)
   player_selected_squares = brd.each_with_object([]) do |(key, value), arr|
-    arr << key if value == PLAYER_MARKER 
+    arr << key if value == player_marker 
   end
   player_selected_squares
 end
 
-def computer_squares(brd)
+def computer_squares(brd, computer_marker)
   computer_selected_squares = brd.each_with_object([]) do |(key, value), arr|
-    arr << key if value == COMPUTER_MARKER 
+    arr << key if value == computer_marker 
   end
   computer_selected_squares
-end
-
-def needs_attention(player_range)
-  attention = WINNING_LINES.each_with_object([]) do |line, arr|
-    arr << (line - player_range)
-  end 
-  attention.keep_if { |arr| arr.size == 1 }
 end
 
 def valid_offense(win_range, valid_squares)
@@ -112,6 +129,17 @@ def valid_offense(win_range, valid_squares)
   end
 end
 
+def priority(range_arr)
+  attention = WINNING_LINES.each_with_object([]) do |line, arr|
+    arr << (line - range_arr)
+  end 
+  attention.keep_if { |arr| arr.size == 1 }
+end
+
+def detect_offense(brd, valid_squares, computer_marker)
+  valid_offense(priority(computer_squares(brd, computer_marker)), valid_squares)
+end
+ 
 def valid_defense(threat_range, valid_squares)
   if threat_range.empty? == false
     threats = threat_range.flatten
@@ -120,47 +148,12 @@ def valid_defense(threat_range, valid_squares)
   end
 end
 
-def detect_offense(brd, valid_squares)
-  valid_offense(needs_attention(computer_squares(brd)), valid_squares)
-end
- 
-def detect_defense(brd, valid_squares) 
-  valid_defense(needs_attention(player_squares(brd)), valid_squares)
+def detect_defense(brd, valid_squares, player_marker) 
+  valid_defense(priority(player_squares(brd, player_marker)), valid_squares)
 end
 
-def offense?(brd, valid_squares)
-  !!detect_offense(brd, valid_squares)
-end
-
-def defense?(brd, valid_squares)
-  !!detect_defense(brd, valid_squares)
-end
-
-def choose_five?(brd, valid_squares)
-  !!(valid_squares.include?(5)) && (player_squares(brd).empty? == false)
-end
-
-def board_full?(brd)
-  empty_squares(brd).empty?
-end
-
-def someone_won?(brd)
-  !!detect_winner(brd)
-end
-
-def detect_winner(brd)
-  WINNING_LINES.each do |line|
-    return 'Player' if brd.values_at(line[0], line[1], line[2]).count(PLAYER_MARKER) == 3
-    return 'Computer' if brd.values_at(line[0], line[1], line[2]).count(COMPUTER_MARKER) == 3
-  end
-  nil
-end
-
-def match_winner?(hsh, rounds)
-  winner = hsh.select do |key, value|
-    key if value == rounds
-  end
-  winner.to_a.flatten[0].to_s.capitalize
+def choose_five(brd, valid_squares, player_marker)
+  !!(valid_squares.include?(5)) && (player_squares(brd, player_marker).empty? == false)
 end
 ###########################################
 # Output
@@ -186,16 +179,15 @@ def display_score(score)
   Current Scores:
   Player: #{score[:player]}
   Computer: #{score[:computer]}
-
   MSG
   prompt(score)
 end
 
-def display_round_standings(brd, score)
-  if someone_won?(brd)
+def display_round_standings(brd, score, first_turn, second_turn)
+  if someone_won?(brd, first_turn, second_turn)
     update_board(brd)
-    prompt "#{detect_winner(brd)} won!"
-    update_score(score, brd)
+    prompt "#{detect_winner(brd, first_turn, second_turn)} won!"
+    update_score(score, brd, first_turn, second_turn)
     sleep(2)
   else
     update_board(brd)
@@ -222,15 +214,29 @@ def ask_who_goes_first(str)
   answer.empty? ? str << 'p' : str << answer
 end
 
-def ask_how_many_rounds
-  message = <<~MSG
-  How many rounds 
-  do you want to play?
-  MSG
-  prompt message
-  rounds = gets.chomp.to_i
-  rounds > 0 ? rounds : rounds = 1
+# LEAVING OFF
+def validate_input_string(str)
+  # Processes...
 end
+
+def ask_how_many_rounds
+  rounds = ''
+  loop do
+    message = <<~MSG
+    How many rounds 
+    do you want to play?
+      MSG
+      prompt message
+      rounds = gets.chomp.to_i
+      if rounds < 5
+        rounds > 0 ? rounds : rounds = 1
+        break
+      else
+        prompt "Max number of rounds is 5"
+      end
+    end
+    rounds
+  end
 
 def display_match_rules(rounds)
   match_params = <<~MSG
@@ -244,7 +250,7 @@ def display_match_summary(score, rounds)
   display_score(score)
   message = <<~MSG
   Game over, match win goes to: 
-  #{match_winner?(score, rounds)}!"
+  #{match_winner?(score, rounds)}!
   MSG
   prompt message
 end
@@ -285,12 +291,12 @@ def reset_local_var(var_1, *vars)
   end
 end
 
-def update_score(score, brd)
-  score[:player] += 1 if detect_winner(brd).include?('Player')
-  score[:computer] += 1 if detect_winner(brd).include?('Computer')
+def update_score(score, brd, first_turn, second_turn)
+  score[:player] += 1 if detect_winner(brd, first_turn, second_turn).include?('Player')
+  score[:computer] += 1 if detect_winner(brd, first_turn, second_turn).include?('Computer')
 end
 
-def player_places_piece!(brd)
+def player_places_piece!(brd, player_marker)
   square = ''
   loop do
     available_choices(empty_squares(brd))
@@ -298,71 +304,80 @@ def player_places_piece!(brd)
     break if empty_squares(brd).include?(square)
     invalid_choice
   end
-  brd[square] = PLAYER_MARKER
+  brd[square] = player_marker 
 end
  
-def computer_places_piece!(brd, valid_squares)
-  if offense?(brd, valid_squares)
-    square = detect_offense(brd, valid_squares).sample
-  elsif defense?(brd, valid_squares)
-    square = detect_defense(brd, valid_squares).sample
-  elsif choose_five?(brd, valid_squares)
+def computer_places_piece!(brd, valid_squares, computer_marker, opponent_marker)
+  if detect_offense(brd, valid_squares, computer_marker)
+    square = detect_offense(brd, valid_squares, computer_marker).sample
+  elsif detect_defense(brd, valid_squares, opponent_marker)
+    square = detect_defense(brd, valid_squares, opponent_marker).sample
+  elsif choose_five(brd, valid_squares, opponent_marker)
     square = 5
   else
     square = valid_squares.sample
   end
-  brd[square] = COMPUTER_MARKER if square != nil
+  brd[square] = computer_marker if square != nil
 end
 
-def first_player(user_input, brd, random_user) 
+def set_user(turn, str)
+  turn.clear
+  turn << "#{str}"
+end
+
+def first_player(user_input, brd, generated_user, first_turn) 
   case user_input
   when 'p'
-    player_places_piece!(brd)
+    set_user(first_turn, 'Player')
+    player_places_piece!(brd, PLAYER1_MARKER)
   when 'c'
-    computer_places_piece!(brd, empty_squares(brd))
+    set_user(first_turn, 'Computer')
+    computer_places_piece!(brd, empty_squares(brd), PLAYER1_MARKER, PLAYER2_MARKER)
   when 'r'
-    
-    if random_user != ''
-      computer_choice = random_user
+    if generated_user != ''
+      computer_choice = generated_user
     else
       arr = ['p', 'c']
       computer_choice = arr.sample  
-      random_user << computer_choice
+      generated_user << computer_choice
     end
 
     case computer_choice 
     when 'p'
-      player_places_piece!(brd)
+      set_user(first_turn, 'Player')
+      player_places_piece!(brd, PLAYER1_MARKER)
     when 'c'
-      computer_places_piece!(brd, empty_squares(brd))
+      set_user(first_turn, 'Computer')
+      computer_places_piece!(brd, empty_squares(brd), PLAYER1_MARKER, PLAYER2_MARKER)
     end
   end  
 end
 
-def second_player(user_input, brd, random_user) 
-  user_input = random_user if random_user != ''
+def second_player(user_input, brd, generated_user, second_turn) 
+  user_input = generated_user if generated_user != ''
   case user_input 
   when 'p'
-    computer_places_piece!(brd, empty_squares(brd))
-  when 'c' 
-    player_places_piece!(brd)
+    set_user(second_turn, 'Computer')
+    computer_places_piece!(brd, empty_squares(brd), PLAYER2_MARKER, PLAYER1_MARKER)
+  when 'c'
+    set_user(second_turn, 'Player')
+    player_places_piece!(brd, PLAYER2_MARKER)
   end
 end
 
-def round_loop(brd, score, user_input, random_user)
+def round_loop(brd, score, user_input, generated_user, first_turn, second_turn)
   loop do
     update_board(brd) 
     display_score(score)
-    first_player(user_input, brd, random_user)
+    first_player(user_input, brd, generated_user, first_turn)
     update_board(brd) 
-    break if someone_won?(brd) || board_full?(brd)
-    second_player(user_input, brd, random_user)
+    break if someone_won?(brd, first_turn, second_turn) || board_full?(brd)
+    second_player(user_input, brd, generated_user, second_turn)
     update_board(brd) 
-    break if someone_won?(brd) || board_full?(brd)
-    #sleep(1)
+    break if someone_won?(brd, first_turn, second_turn) || board_full?(brd)
     clear_screen
   end
-  display_round_standings(brd, score)
+  display_round_standings(brd, score, first_turn, second_turn)
 end
 
 ###########################################
@@ -371,6 +386,8 @@ end
 computer_choice = ''
 user_choice = ''
 play_again = ''
+player1 = ''
+player2 = ''
 loop do 
   display_welcome_message
   ask_who_goes_first(user_choice)
@@ -379,7 +396,7 @@ loop do
   current_score = initialize_score 
   loop do 
     board = initialize_board
-    round_loop(board, current_score, user_choice, computer_choice)
+    round_loop(board, current_score, user_choice, computer_choice, player1, player2)
     break if current_score.value?(num_rounds)
   end 
   reset_local_var(computer_choice, user_choice)

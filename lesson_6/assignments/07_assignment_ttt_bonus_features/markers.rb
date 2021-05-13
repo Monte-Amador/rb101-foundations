@@ -3,8 +3,8 @@ WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
                 [[1, 5, 9], [3, 5, 7]] # diagonals
 
 INITIAL_MARKER = ' '
-PLAYER_MARKER = 'X'
-COMPUTER_MARKER = 'O'
+PLAYER1_MARKER = 'X'
+PLAYER2_MARKER = 'O'
 
 ###########################################
 # Initialize Methods
@@ -85,14 +85,14 @@ end
 
 def player_squares(brd)
   player_selected_squares = brd.each_with_object([]) do |(key, value), arr|
-    arr << key if value == PLAYER_MARKER 
+    arr << key if value == PLAYER1_MARKER 
   end
   player_selected_squares
 end
 
 def computer_squares(brd)
   computer_selected_squares = brd.each_with_object([]) do |(key, value), arr|
-    arr << key if value == COMPUTER_MARKER 
+    arr << key if value == PLAYER2_MARKER 
   end
   computer_selected_squares
 end
@@ -150,8 +150,8 @@ end
 
 def detect_winner(brd)
   WINNING_LINES.each do |line|
-    return 'Player' if brd.values_at(line[0], line[1], line[2]).count(PLAYER_MARKER) == 3
-    return 'Computer' if brd.values_at(line[0], line[1], line[2]).count(COMPUTER_MARKER) == 3
+    return 'Player1' if brd.values_at(line[0], line[1], line[2]).count(PLAYER1_MARKER) == 3
+    return 'Player2' if brd.values_at(line[0], line[1], line[2]).count(PLAYER2_MARKER) == 3
   end
   nil
 end
@@ -290,7 +290,7 @@ def update_score(score, brd)
   score[:computer] += 1 if detect_winner(brd).include?('Computer')
 end
 
-def player_places_piece!(brd)
+def player_places_piece!(brd, mark)
   square = ''
   loop do
     available_choices(empty_squares(brd))
@@ -298,7 +298,7 @@ def player_places_piece!(brd)
     break if empty_squares(brd).include?(square)
     invalid_choice
   end
-  brd[square] = PLAYER_MARKER
+  brd[square] = mark
 end
  
 def computer_places_piece!(brd, valid_squares)
@@ -311,13 +311,13 @@ def computer_places_piece!(brd, valid_squares)
   else
     square = valid_squares.sample
   end
-  brd[square] = COMPUTER_MARKER if square != nil
+  brd[square] = PLAYER2_MARKER if square != nil
 end
 
 def first_player(user_input, brd, random_user) 
   case user_input
   when 'p'
-    player_places_piece!(brd)
+    player_places_piece!(brd, PLAYER1_MARKER)
   when 'c'
     computer_places_piece!(brd, empty_squares(brd))
   when 'r'

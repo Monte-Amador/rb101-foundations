@@ -46,4 +46,3 @@ REFACTOR part 2:
 - [x] clean up the extra outputs and untangle the code.
 - [x] rename methods that are called within the detect_threat 
 - [ ] Look at extracting each loop into its own method as a way of making the action more succint. Or perhaps better to abstract all the logic _within_ the loop, and thereby keep the loop as a way of looping over the method multiple times? 
-- [ ] Need to validate integer for user input
