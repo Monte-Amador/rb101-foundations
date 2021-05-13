@@ -5,6 +5,7 @@ Some of the best places for me to have the growth I'm looking for came by way of
 
 
 ## Refactor todos UI:
+- [ ] rubocop with 0.86
 - [ ] add numbers for individual squares so that the user interface can help improve the user experience.
 - [ ] BOARD NUMBERS: this could be as simple as replacing the INITIAL_MARKER with the `num` value from the intializing method. I got this to work but it would be a lot nicer if the numbers were only there for a specified amount of time considering the distraction. Or maybe until there is a mark on the board then the numbers could go back to being just empty strings.
 
@@ -75,24 +76,27 @@ got the score to update and needs further testing now. It looks like I can conso
 - [x] Need to validate an integer between 1..10 for how many rounds will be played, and also provide a fallback if the user simply presses return.
 
 - [ ] refactor the joiner and validate joiner method correctly
-- [ ] LEFT OFF: looks like the rounds method isn't working properly with the given valid inputs. for example, if you input 7 it will start playing instead of erring out and looping through again.
+- [ ] computer turn isn't displaying score. 
+- [ ] Nice to start the first round with the explanation as to who is what mark?
+- [x] LEFT OFF: looks like the rounds method isn't working properly with the given valid inputs. for example, if you input 7 it will start playing instead of erring out and looping through again.
+  - [x] upon first tests, it looks like rounds is returning false when input == return key.
+  - [x] returns nil if integer is not in range. This is because the integer_in_range(str, range) returns nil when there is nothing in the range of the valid_inputs. In other words, the method has a valid range of integers to test if the input is between them, however if it isn't it implicitly returns nil. The correction to this would be to return false if the integer is not within the range.
+  - [x] ind a way to return a default number in the rounds method.
 
-### List of user inputs to validate:
+### Bonus Features File List of user inputs to validate:
 - [x] ask_who_goes_first (string, %w(p, c, r))
-- [ ] how many round to play? (defaults to 1, also needs to have a max value of 5)
-- [ ] choose a square (int (1,9))
+- [x] how many round to play? (defaults to 1, also needs to have a max value of 5)
+- [x] choose a square (int (1,9))
 - [ ] play another match? %w(yes, y, n, no)
 
 - [h] Let's take out the redunancy of the round_loop multiple break statements and see if it's possible (it is) to break it into a single move and break statement.
 
-- [ ] Clear up display messages in order to clarify that the markers that each player will use in the intial show
-- [ ] rubocop with 0.86
+- [x] Clear up display messages in order to clarify that the markers that each player will use in the intial show
 - [x] the validate input method is working but it has only been tested in `irb` so need to try and implement it throughout all user inputs. Definitely not working at the moment with the way it's implemented. Look at this with some coffee.
 - [x] Also, note that the it will validate if the input is, for example, p or player. Let's keep it simple for now but I'd really like it to be flexible without adding too much conditional code.
-
 - [x] the return value from the validate method inside the ask_who_goes_first needs to be appended to the `str` variable.
 
-## test.rb
+## input_validation test file
 - [x] now testing out the integer range or specific number as a data_range
 - [x] implement into codebase via different methods. currently I'm trying to break down the test.rb file correctly as the master method is working correctly, but i want to abstract the validate integer range method and then include that into the master mehtod.
 - [x] might be nice to be able to add an array to hold the string values for readability?
