@@ -76,9 +76,9 @@ got the score to update and needs further testing now. It looks like I can conso
 - [x] Need to validate an integer between 1..10 for how many rounds will be played, and also provide a fallback if the user simply presses return.
 
 - [ ] refactor the joiner and validate joiner method correctly
-- [ ] computer turn isn't displaying score. 
-- [ ] Nice to start the first round with the explanation as to who is what mark?
-- [x] LEFT OFF: looks like the rounds method isn't working properly with the given valid inputs. for example, if you input 7 it will start playing instead of erring out and looping through again.
+- [x] computer turn isn't displaying score. 
+- [x] Nice to start the first round with the explanation as to who is what mark? perhaps a better way would be to incorporate the mark within the current score method. 'Player: ' would be 'Player[X]: ' and 'Computer[O]: ' for example
+- [x] looks like the rounds method isn't working properly with the given valid inputs. for example, if you input 7 it will start playing instead of erring out and looping through again.
   - [x] upon first tests, it looks like rounds is returning false when input == return key.
   - [x] returns nil if integer is not in range. This is because the integer_in_range(str, range) returns nil when there is nothing in the range of the valid_inputs. In other words, the method has a valid range of integers to test if the input is between them, however if it isn't it implicitly returns nil. The correction to this would be to return false if the integer is not within the range.
   - [x] ind a way to return a default number in the rounds method.
@@ -87,7 +87,7 @@ got the score to update and needs further testing now. It looks like I can conso
 - [x] ask_who_goes_first (string, %w(p, c, r))
 - [x] how many round to play? (defaults to 1, also needs to have a max value of 5)
 - [x] choose a square (int (1,9))
-- [ ] play another match? %w(yes, y, n, no)
+- [x] play another match? %w(yes, y, n, no)
 
 - [h] Let's take out the redunancy of the round_loop multiple break statements and see if it's possible (it is) to break it into a single move and break statement.
 
@@ -98,10 +98,36 @@ got the score to update and needs further testing now. It looks like I can conso
 
 ## input_validation test file
 - [x] now testing out the integer range or specific number as a data_range
-- [x] implement into codebase via different methods. currently I'm trying to break down the test.rb file correctly as the master method is working correctly, but i want to abstract the validate integer range method and then include that into the master mehtod.
+- [x] implement into codebase via different methods. currently I'm trying to break down the test.rb file correctly as the master method is working correctly, but I want to abstract the validate integer range method and then include that into the master mehtod.
 - [x] might be nice to be able to add an array to hold the string values for readability?
 - [x] double check if I can use flatten on the data_range parameter
 - [x] return values for integer is self unless false or nil
 - [x] retunr value for string is self unless false or nil
 - [x] go through each example output to verify and understand the return values and how they go.
 - [x] return values for integer_validation and integer_in_range all okay for deeper understanding. Now look into whether or not we want to make the range array an optional parameter
+- I have taken the second_turn parameter and put it within the first_player method since it follows that we can assign player1 and player2 accordingly based off the user input.
+remove second_turn argument from the round_loop second_player mehtod and also from the second_player method itself.  
+
+I have opted to try and display each of the players markers within the score display method as that seems most appropriate. This meant that I had to update the display_score method to include first_turn, second_turn parameters throughout the program.
+
+Preliminary testing works, but only if the computer goes first (either by user choice or picking random). Once the first player goes, that's when the variables get set. If I want this to work the way I'm envisioning, it's best to move that whole part of the first_player method to an earlier method call. This can help with the refactoring of the first_player and second_player
+maybe I can remove the first_turn and second_turn from the display_round_standings since I don't need to display it.
+
+## Disabling the set_user method from the first_player method. 
+Although it is working, the user is never set until the first move happens. We need to set this before the board is shown.
+
+got it sorted, but now it's time for some house cleaning. Namely, the first_player and the display_score and the display_match_summary no longer needs all the parameters of first_turn and second_turn.
+
+given that the display_players_markers method sets up the player1 and player2 according to the user_input, I don't see the computer_choice being empty? Actually, don't we already have the first player given from the user_input and the display_players_markers return value? 
+
+- [x] this feels right, so once you finish with the refactoring, make sure you remove the required parameters from all occurences where they are passed in as arguments for the first_player and second_player
+- [x] bug with continuing the game by choosing yes again. Currently it's breaking when choosing a random user so points to the computer_choice not being set correctly? both player and comptuer work correctly even when playing again. It is therefore isolated to the user_choice of random, which means it may not be setting the computer_choice correctly. After the initial fix, it looks like it worked for the first round, but then switched players on or after the second round when the computer engaged in it's turn. This may have to do with the player1 and player2 being reset?
+
+So instead of trying to see if the error happens again, I'm going to pause on this for a moment and walk through my display_players_markers method:
+1. first we check the user_input to see what the user input as it's required it will always be true.
+2. Depending upon what the user input, they can choose player, or computer or random. p and c are straight forward and assign the player and computer to player1 and player2.3. if the user picks a random choice, the computer will assign either p or c to the computer_choice variable. 
+4. although the computer_choice variable gets cleared in the action of ending a round by a match win, it is still retained while working through the loop (this makes more sense if you think about the situation where a user goes first and the round results in a tie. The user should go first again for the next tie-breaking round). 
+5. The current bug at the moment is related to the fact that we first run the display_players_markers at the head of each turn to illustrate who has 'X' and who has 'O' as a courtesy. In so doing, I didn't allow for the fact that the computer_choice may have been set during the first turn and I didn't check of that. In effect, this continuously reset the computer_choice to a random value upon every turn. 
+6. the patch was simply to return the computer_choice if it had already been set. 
+
+This has been a great cool project to understand the benefit of mutating the caller and how that can be very useful in a program like this.

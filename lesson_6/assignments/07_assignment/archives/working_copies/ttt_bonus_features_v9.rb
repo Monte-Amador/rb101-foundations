@@ -291,6 +291,8 @@ def display_match_rules(rounds)
   match_params = <<~MSG
   Great! The first player to win
   #{rounds} round(s) wins the match. 
+  First player is 'X',
+  and the second player is 'O'.
   MSG
   prompt(match_params)
 end
@@ -312,15 +314,13 @@ def display_closing
   prompt message
 end
 
+# LEFT OFF: validate input with my method
 def ask_play_again(play)
   loop do
     reset_local_var(play)
     prompt 'Play another match?(y/n)'
     play << gets.chomp.downcase
-    play = 'y' if play == ''
-    valid_input = %w(y n)
-    answer = validate_user_input(play, valid_input, 'string') 
-    case answer
+    case play
     when 'y'
       clear_screen
       break
@@ -376,69 +376,58 @@ def set_user(turn, str)
   turn << "#{str}"
 end
 
-def first_player(brd, first_turn) 
-  case first_turn
-  when 'Player'
-    player_places_piece!(brd, PLAYER1_MARKER)
-  when 'Computer'
-    computer_places_piece!(brd, empty_squares(brd), PLAYER1_MARKER, PLAYER2_MARKER)
-  end
-end
-  
-def second_player(brd, second_turn) 
-  case second_turn 
-  when 'Computer'
-    computer_places_piece!(brd, empty_squares(brd), PLAYER2_MARKER, PLAYER1_MARKER)
-  when 'Player'
-    player_places_piece!(brd, PLAYER2_MARKER)
-  end
-end
-
-def display_players_markers(user_input, random_choice, first_turn, second_turn)
+def first_player(user_input, brd, generated_user, first_turn) 
   case user_input
   when 'p'
     set_user(first_turn, 'Player')
-    set_user(second_turn, 'Computer')
+    player_places_piece!(brd, PLAYER1_MARKER)
   when 'c'
     set_user(first_turn, 'Computer')
-    set_user(second_turn, 'Player')
+    computer_places_piece!(brd, empty_squares(brd), PLAYER1_MARKER, PLAYER2_MARKER)
   when 'r'
-    if random_choice == ''
-      valid_choices = %w(p c)
-      random_choice << valid_choices.sample
-    #return random_choice if random_choice != ''
-      case random_choice
-      when 'p'
-        set_user(first_turn, 'Player')
-        set_user(second_turn, 'Computer')
-      when 'c'
-        set_user(first_turn, 'Computer')
-        set_user(second_turn, 'Player')
-      end
+    if generated_user != ''
+      computer_choice = generated_user
     else
-      random_choice
+      arr = ['p', 'c']
+      computer_choice = arr.sample  
+      generated_user << computer_choice
     end
-  else
-    prompt "error"     
+
+    case computer_choice 
+    when 'p'
+      set_user(first_turn, 'Player')
+      player_places_piece!(brd, PLAYER1_MARKER)
+    when 'c'
+      set_user(first_turn, 'Computer')
+      computer_places_piece!(brd, empty_squares(brd), PLAYER1_MARKER, PLAYER2_MARKER)
+    end
+  end  
+end
+
+def second_player(user_input, brd, generated_user, second_turn) 
+  user_input = generated_user if generated_user != ''
+  case user_input 
+  when 'p'
+    set_user(second_turn, 'Computer')
+    computer_places_piece!(brd, empty_squares(brd), PLAYER2_MARKER, PLAYER1_MARKER)
+  when 'c'
+    set_user(second_turn, 'Player')
+    player_places_piece!(brd, PLAYER2_MARKER)
   end
-  prompt "#{first_turn} = 'X', #{second_turn} = 'O'"
 end
+#def display_players(first_turn, second_turn)
+#  prompt "#{first_turn} = 'X', #{second_turn} = 'O'"
+#end
 
-def display_player(player)
-  player
-end
-
-def round_loop(brd, score, user_input, random_choice, first_turn, second_turn)
+def round_loop(brd, score, user_input, generated_user, first_turn, second_turn)
   loop do
     update_board(brd) 
-    display_players_markers(user_input, random_choice, first_turn, second_turn)
+    #display_players(first_turn, second_turn)
     display_score(score)
-    first_player(brd, first_turn)
+    first_player(user_input, brd, generated_user, first_turn)
     update_board(brd) 
     break if someone_won?(brd, first_turn, second_turn) || board_full?(brd)
-    display_players_markers(user_input, random_choice, first_turn, second_turn)
-    display_score(score)
-    second_player(brd, second_turn)
+    second_player(user_input, brd, generated_user, second_turn)
     update_board(brd) 
     break if someone_won?(brd, first_turn, second_turn) || board_full?(brd)
     clear_screen
@@ -459,14 +448,14 @@ loop do
   ask_who_goes_first(user_choice)
   num_rounds = ask_how_many_rounds
   display_match_rules(num_rounds)
-  sleep(3)
+  sleep(5)
   current_score = initialize_score 
   loop do 
     board = initialize_board
     round_loop(board, current_score, user_choice, computer_choice, player1, player2)
     break if current_score.value?(num_rounds)
   end 
-  reset_local_var(computer_choice, user_choice, player1, player2)
+  reset_local_var(computer_choice, user_choice)
   display_match_summary(current_score, num_rounds)
   ask_play_again(play_again)
   break if play_again == 'n'
