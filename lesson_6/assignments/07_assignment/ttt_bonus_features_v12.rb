@@ -48,7 +48,10 @@ def initialize_users
     user_choice: '',
     computer_choice: '',
     user_1: '',
-    user_2: '' }
+    user_2: '',
+    markers: { player1: PLAYER1_MARKER, 
+               player2: PLAYER2_MARKER }
+  }
 end
 
 def initialize_board
@@ -140,16 +143,16 @@ def board_full?(brd)
   empty_squares(brd).empty?
 end
 
-def someone_won?(brd, first_turn, second_turn)
-  !!detect_winner(brd, first_turn, second_turn)
+def someone_won?(brd, cycle)
+  !!detect_winner(brd, cycle)
 end
 
-def detect_winner(brd, first_turn, second_turn)
+def detect_winner(brd, cycle)
   WINNING_LINES.each do |line|
     if brd.values_at(line[0], line[1], line[2]).count(PLAYER1_MARKER) == 3
-      return first_turn.to_s
+      return cycle[:user_1].to_s # refactor .to_s this seems redundant
     elsif brd.values_at(line[0], line[1], line[2]).count(PLAYER2_MARKER) == 3
-      return second_turn.to_s
+      return cycle[:user_2].to_s # refactor .to_s this seems redundant
     end
   end
   nil
@@ -248,11 +251,11 @@ def display_score(score)
   prompt(score)
 end
 
-def display_round_standings(brd, score, first_turn, second_turn)
+def display_round_standings(brd, score, cycle)
   update_board(brd)
-  if someone_won?(brd, first_turn, second_turn)
-    prompt "#{detect_winner(brd, first_turn, second_turn)} won!"
-    update_score(score, brd, first_turn, second_turn)
+  if someone_won?(brd, cycle)
+    prompt "#{detect_winner(brd, cycle)} won!"
+    update_score(score, brd, cycle)
   else
     prompt "It's a tie!"
   end
@@ -367,7 +370,7 @@ def computer_chooses(hsh)
   end
   establish_user_order(hsh, hsh[:computer_choice].to_sym)
 end
-   
+
 def create_user_one(hsh, sym)
   hsh[:user_1] << hsh[sym]
 end
@@ -389,9 +392,9 @@ def reset_local_var(variable, *vars)
   end
 end
 
-def update_score(score, brd, first_turn, second_turn)
-  score[:player] += 1 if detect_winner(brd, first_turn, second_turn).include?('Player')
-  score[:computer] += 1 if detect_winner(brd, first_turn, second_turn).include?('Computer')
+def update_score(score, brd, cycle)
+  score[:player] += 1 if detect_winner(brd, cycle).include?('Player')
+  score[:computer] += 1 if detect_winner(brd, cycle).include?('Computer')
 end
 
 def player_places_piece!(brd, player_mark)
@@ -418,8 +421,8 @@ def computer_places_piece!(brd, valid_squares, comp_mark, opponent_mark)
   brd[square] = comp_mark if square
 end
 
-def first_player(brd, first_turn)
-  case first_turn
+def first_player(brd, cycle)
+  case cycle[:user_1]
   when 'Player'
     player_places_piece!(brd, PLAYER1_MARKER)
   when 'Computer'
@@ -427,8 +430,8 @@ def first_player(brd, first_turn)
   end
 end
 
-def second_player(brd, second_turn)
-  case second_turn
+def second_player(brd, cycle)
+  case cycle[:user_2]
   when 'Computer'
     computer_places_piece!(brd, empty_squares(brd), PLAYER2_MARKER, PLAYER1_MARKER)
   when 'Player'
@@ -436,28 +439,28 @@ def second_player(brd, second_turn)
   end
 end
 
-def display_players_markers(first_turn, second_turn)
-  prompt "#{first_turn} = 'X', #{second_turn} = 'O'"
+def display_players_markers(cycle)
+  prompt "#{cycle[:user_1]} = 'X', #{cycle[:user_2]} = 'O'"
 end
 
-def user_iteration(brd, first_turn, second_turn, counter)
-  first_player(brd, first_turn) if counter.even?
-  second_player(brd, second_turn) if counter.odd?
+def user_iteration(brd, counter, cycle)
+  first_player(brd, cycle) if counter.even?
+  second_player(brd, cycle) if counter.odd?
 end
 
-def round_loop(brd, score, first_turn, second_turn)
+def round_loop(brd, score, cycle)
   counter = 0
   loop do
     update_board(brd)
-    display_players_markers(first_turn, second_turn)
+    display_players_markers(cycle)
     display_score(score)
-    user_iteration(brd, first_turn, second_turn, counter)
+    user_iteration(brd, counter, cycle)
     update_board(brd)
     counter += 1
-    break if someone_won?(brd, first_turn, second_turn) || board_full?(brd)
+    break if someone_won?(brd, cycle) || board_full?(brd)
     clear_screen
   end
-  display_round_standings(brd, score, first_turn, second_turn)
+  display_round_standings(brd, score, cycle)
 end
 
 ###########################################
@@ -474,7 +477,7 @@ loop do
   current_score = initialize_score
   loop do
     board = initialize_board
-    round_loop(board, current_score, users[:user_1], users[:user_2])
+    round_loop(board, current_score, users)
     break if current_score.value?(num_rounds)
   end
   display_match_summary(current_score, num_rounds)

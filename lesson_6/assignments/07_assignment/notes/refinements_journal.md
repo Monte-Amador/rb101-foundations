@@ -278,3 +278,12 @@ So it stands to reason to first drop in the new methods and hook them up. set_us
 ## Done
 ::WRAPPING-UP:: Good stuff and session. The code feels much cleaner now and I really liked getting deeper with my hash knowledge. There's some smaller refactoring to still be done but I'm ready to have this reviewed. I just gotta get it into the rubocop and maybe look at the way the screen displays (looks like a flicker after the board updates). This flicker does seem to happen only after the user inputs their square choice.:w
 
+# Refactoring round_loop
+
+This doesn't have to be as big as I'm making it out. Pretty cool to be able to define a hash as the only or last parameter in a method and then call the arguments without supplying the curly braces. Heck, without supplying the hash object itself. We just need to be able to specify the same keys in the arguments that will correlate to the necessary hash objects we define in the method.
+
+So with that, starting with the round_loop parameters, I simply added the users_hash as the final argument to that method to start with. 
+
+::LEFT-OFF:: refactored round_loop well. Fun too. Now moving to focus on the heinous computer_places_piece! and refactor the constants and parameters to include instead the cycle parameter from the round loop which is the users hash. The users hash now holds the user markers too so we can use that instead of the constants where applicable. 
+
+With coffee... save as file 13, double check everything is working, commit and refactor the constants out of problematic places starting with computer_places_piece!
