@@ -38,6 +38,36 @@ def display_board(brd)
   puts ''
 end
 
+
+def initialize_users(user_choice, computer_choice, player1, player2)
+  reset_local_var(player1, player2)
+  case user_choice
+  when 'p'
+    set_user(player1, 'Player')
+    set_user(player2, 'Computer')
+  when 'c'
+    set_user(player1, 'Computer')
+    set_user(player2, 'Player')
+  when 'r'
+    if computer_choice == ''
+      valid_choices = %w(p c)
+      computer_choice << valid_choices.sample
+      case computer_choice
+      when 'p'
+        set_user(player1, 'Player')
+        set_user(player2, 'Computer')
+      when 'c'
+        set_user(player1, 'Computer')
+        set_user(player2, 'Player')
+      end
+    else
+      computer_choice
+    end
+  else
+    prompt "error"     
+  end  
+end
+
 def initialize_board
   new_board = {}
   (1..9).each { |num| new_board[num] = INITIAL_MARKER }
@@ -312,9 +342,9 @@ def display_closing
   prompt message
 end
 
-def ask_play_again(play)
+def ask_play_again
+  play = ''
   loop do
-    reset_local_var(play)
     prompt 'Play another match?(y/n)'
     play << gets.chomp.downcase
     play = 'y' if play == ''
@@ -325,7 +355,7 @@ def ask_play_again(play)
       clear_screen
       break
     when 'n'
-      break
+      return answer
     else
       prompt 'sorry, "y" or "n" please'
     end
@@ -394,55 +424,24 @@ def second_player(brd, second_turn)
   end
 end
 
-# refactor display_players_markers logic into separate methods
-def display_players_markers(user_input, random_choice, first_turn, second_turn)
-  case user_input
-  when 'p'
-    set_user(first_turn, 'Player')
-    set_user(second_turn, 'Computer')
-  when 'c'
-    set_user(first_turn, 'Computer')
-    set_user(second_turn, 'Player')
-  when 'r'
-    if random_choice == ''
-      valid_choices = %w(p c)
-      random_choice << valid_choices.sample
-      case random_choice
-      when 'p'
-        set_user(first_turn, 'Player')
-        set_user(second_turn, 'Computer')
-      when 'c'
-        set_user(first_turn, 'Computer')
-        set_user(second_turn, 'Player')
-      end
-    else
-      random_choice
-    end
-  else
-    prompt "error"     
-  end
+def display_players_markers(first_turn, second_turn)
   prompt "#{first_turn} = 'X', #{second_turn} = 'O'"
 end
 
-def display_player(player)
-  player
+def turns(brd, first_turn, second_turn, counter)
+  first_player(brd, first_turn) if counter.even?
+  second_player(brd, second_turn) if counter.odd?
 end
 
-# refactor: better way to pass less parameters?
-def round_loop(brd, score, user_input, random_choice, first_turn, second_turn)
+def round_loop(brd, score, first_turn, second_turn)
+  counter = 0
   loop do
     update_board(brd) 
-    display_players_markers(user_input, random_choice, first_turn, second_turn)
+    display_players_markers(first_turn, second_turn)
     display_score(score)
-    first_player(brd, first_turn)
+    turns(brd, first_turn, second_turn, counter)
     update_board(brd) 
-    break if someone_won?(brd, first_turn, second_turn) || board_full?(brd)
-    # possible to remove rest of block
-    # by way of abstracting the first and second turns into a method that potentially assigns either the first or the second to a single 'player' and changes over for each consecutive round.
-    display_players_markers(user_input, random_choice, first_turn, second_turn)
-    display_score(score)
-    second_player(brd, second_turn)
-    update_board(brd) 
+    counter += 1
     break if someone_won?(brd, first_turn, second_turn) || board_full?(brd)
     clear_screen
   end
@@ -454,24 +453,23 @@ end
 ###########################################
 computer_choice = ''
 user_choice = ''
-play_again = ''
 player1 = ''
 player2 = ''
 loop do 
   display_welcome_message
   ask_who_goes_first(user_choice)
+  initialize_users(user_choice, computer_choice, player1, player2)
   num_rounds = ask_how_many_rounds
   display_match_rules(num_rounds)
-  sleep(3)
+  sleep(2)
   current_score = initialize_score 
   loop do 
     board = initialize_board
-    round_loop(board, current_score, user_choice, computer_choice, player1, player2)
+    round_loop(board, current_score, player1, player2)
     break if current_score.value?(num_rounds)
   end 
-  reset_local_var(computer_choice, user_choice, player1, player2)
+  reset_local_var(computer_choice, user_choice)
   display_match_summary(current_score, num_rounds)
-  ask_play_again(play_again)
-  break if play_again == 'n'
+  break if ask_play_again == 'n'
 end
 display_closing
