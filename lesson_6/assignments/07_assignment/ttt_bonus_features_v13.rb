@@ -9,6 +9,13 @@ PLAYER2_MARKER = 'O'
 ###########################################
 # Initialize Methods
 ###########################################
+def reset_local_var(variable, *vars)
+  variable.clear
+  if vars
+    vars.each(&:clear)
+  end
+end
+
 def clear_screen
   system('clear') || system('cls')
 end
@@ -20,6 +27,24 @@ end
 
 def prompt(msg)
   puts "=> #{msg}"
+end
+
+def initialize_users
+  { p: 'Player',
+    c: 'Computer',
+    r: ['p', 'c'],
+    valid_user_inputs: ['p', 'c', 'r'],
+    user_choice: '',
+    computer_choice: '',
+    user1_title: '',
+    user2_title: '' }
+end
+
+def initialize_board
+  new_board = {}
+  (1..9).each { |num| new_board[num] = INITIAL_MARKER }
+  new_board[:player_markers] = { user1: PLAYER1_MARKER, user2: PLAYER2_MARKER }
+  new_board
 end
 
 # rubocop:disable Metrics/AbcSize
@@ -40,32 +65,18 @@ def display_board(brd)
 end
 # rubocop:enable Metrics/AbcSize
 
-def initialize_users
-  { p: 'Player',
-    c: 'Computer',
-    r: ['p', 'c'],
-    valid_user_inputs: ['p', 'c', 'r'],
-    user_choice: '',
-    computer_choice: '',
-    user_1: '',
-    user_2: '' }
-end
-
-def initialize_board
-  new_board = {}
-  (1..9).each { |num| new_board[num] = INITIAL_MARKER }
-  new_board[:markers] = { user1: PLAYER1_MARKER, user2: PLAYER2_MARKER }
-  new_board
-end
-
 def initialize_score
   { player: 0, computer: 0 }
 end
 
-def join_iteration(arr, delimeter, conjunction)
+###########################################
+# Retrieve/inspect Values
+###########################################
+
+def joiner_iteration(squares, delimeter, conjunction)
   output = ''
-  arr.each_with_index do |value, idx|
-    output << if idx < (arr.size - 1)
+  squares.each_with_index do |value, idx|
+    output << if idx < (squares.size - 1)
                 "#{value}#{delimeter}"
               else
                 "#{conjunction} #{value}"
@@ -74,15 +85,15 @@ def join_iteration(arr, delimeter, conjunction)
   output
 end
 
-def join(arr, delimeter = ', ', conjunction = 'or')
-  if validate_join_array(arr)
+def joiner(squares, delimeter = ', ', conjunction = 'or')
+  if validate_joiner_array(squares)
     string_output = ''
-    case arr.size
-    when 1 then string_output << arr[0].to_s
+    case squares.size
+    when 1 then string_output << squares[0].to_s
     when 2
-      string_output << ("#{arr[0]} #{conjunction} #{arr[1]}")
+      string_output << ("#{squares[0]} #{conjunction} #{squares[1]}")
     when 3..9
-      string_output << join_iteration(arr, delimeter, conjunction)
+      string_output << joiner_iteration(squares, delimeter, conjunction)
     else
       prompt "There was a problem with the array size"
     end
@@ -92,11 +103,8 @@ def join(arr, delimeter = ', ', conjunction = 'or')
   end
 end
 
-###########################################
-# Retrieve/inspect Values
-###########################################
-def validate_join_array(arr)
-  !!arr.is_a?(Array)
+def validate_joiner_array(squares)
+  !!squares.is_a?(Array)
 end
 
 def validate_integer_input(int)
@@ -148,9 +156,9 @@ end
 def detect_winner(brd, cycle)
   WINNING_LINES.each do |line|
     if brd.values_at(line[0], line[1], line[2]).count(PLAYER1_MARKER) == 3
-      return cycle[:user_1].to_s # refactor .to_s this seems redundant
+      return cycle[:user1_title].to_s # refactor .to_s this seems redundant
     elsif brd.values_at(line[0], line[1], line[2]).count(PLAYER2_MARKER) == 3
-      return cycle[:user_2].to_s # refactor .to_s this seems redundant
+      return cycle[:user2_title].to_s # refactor .to_s this seems redundant
     end
   end
   nil
@@ -165,9 +173,16 @@ end
 
 def square_select(brd, user)
   selected_squares = brd.each_with_object([]) do |(key, value), arr|
-    arr << key if value == brd[:markers][user]
+    arr << key if value == brd[:player_markers][user]
   end
   selected_squares
+end
+
+def priority(range_arr)
+  attention = WINNING_LINES.each_with_object([]) do |line, arr|
+    arr << (line - range_arr)
+  end
+  attention.keep_if { |arr| arr.size == 1 }
 end
 
 def valid_offense(brd, win_range)
@@ -176,13 +191,6 @@ def valid_offense(brd, win_range)
     win.keep_if { |num| empty_squares(brd).include?(num) }
     win if win.empty? == false
   end
-end
-
-def priority(range_arr)
-  attention = WINNING_LINES.each_with_object([]) do |line, arr|
-    arr << (line - range_arr)
-  end
-  attention.keep_if { |arr| arr.size == 1 }
 end
 
 def detect_offense(brd, computer)
@@ -223,10 +231,10 @@ def display_error
   prompt error
 end
 
-def display_available_choices(arr)
+def display_available_choices(squares)
   message = <<~MSG
   Choose an available square
-  #{join(arr)}
+  #{joiner(squares)}
   MSG
   prompt message
 end
@@ -327,13 +335,11 @@ def display_closing
 end
 
 def ask_play_again(valid_input)
-  # play = ''
   loop do
     prompt 'Play another match?(y/n)'
     play = gets.chomp.downcase
     play = 'y' if play == ''
-    answer = validate_user_input(play, valid_input, 'string')
-    case answer
+    case validate_user_input(play, valid_input, 'string')
     when 'y'
       clear_screen
       break
@@ -350,8 +356,8 @@ end
 ###########################################
 
 def create_users(hsh)
-  if hsh[:user_1] && hsh[:user_2] != ''
-    reset_local_var(hsh[:user_1], hsh[:user_2])
+  if hsh[:user1_title] && hsh[:user2_title] != ''
+    reset_local_var(hsh[:user1_title], hsh[:user2_title])
   end
   if hsh[:user_choice] == 'r'
     computer_chooses(hsh)
@@ -368,24 +374,17 @@ def computer_chooses(hsh)
 end
 
 def create_user_one(hsh, sym)
-  hsh[:user_1] << hsh[sym]
+  hsh[:user1_title] << hsh[sym]
 end
 
 def create_user_two(hsh)
-  hsh[:user_2] << hsh[:p] if hsh[:user_1] == 'Computer'
-  hsh[:user_2] << hsh[:c] if hsh[:user_1] == 'Player'
+  hsh[:user2_title] << hsh[:p] if hsh[:user1_title] == 'Computer'
+  hsh[:user2_title] << hsh[:c] if hsh[:user1_title] == 'Player'
 end
 
 def establish_user_order(hsh, sym)
   create_user_one(hsh, sym)
   create_user_two(hsh)
-end
-
-def reset_local_var(variable, *vars)
-  variable.clear
-  if vars
-    vars.each(&:clear)
-  end
 end
 
 def update_score(score, brd, cycle)
@@ -401,7 +400,7 @@ def player_places_piece!(brd, player)
     break if empty_squares(brd).include?(square)
     display_invalid_choice
   end
-  brd[square] = brd[:markers][player]
+  brd[square] = brd[:player_markers][player]
 end
 
 def computer_places_piece!(brd, computer, opponent)
@@ -414,11 +413,11 @@ def computer_places_piece!(brd, computer, opponent)
            else
              empty_squares(brd).sample
            end
-  brd[square] = brd[:markers][computer]
+  brd[square] = brd[:player_markers][computer]
 end
 
 def first_player(brd, cycle)
-  case cycle[:user_1]
+  case cycle[:user1_title]
   when 'Player'
     player_places_piece!(brd, :user1)
   when 'Computer'
@@ -427,7 +426,7 @@ def first_player(brd, cycle)
 end
 
 def second_player(brd, cycle)
-  case cycle[:user_2]
+  case cycle[:user2_title]
   when 'Computer'
     computer_places_piece!(brd, :user2, :user1)
   when 'Player'
@@ -438,8 +437,8 @@ end
 def display_players_markers(brd, cycle)
   user_markers = <<~MSG
   Player Markers:
-  #{cycle[:user_1]} = #{brd[:markers][:user1]}, 
-  #{cycle[:user_2]} = #{brd[:markers][:user2]}
+  #{cycle[:user1_title]} = #{brd[:player_markers][:user1]}, 
+  #{cycle[:user2_title]} = #{brd[:player_markers][:user2]}
   MSG
   prompt user_markers
 end
@@ -478,7 +477,6 @@ loop do
   current_score = initialize_score
   loop do
     board = initialize_board
-    p board
     round_loop(board, current_score, users)
     break if current_score.value?(num_rounds)
   end

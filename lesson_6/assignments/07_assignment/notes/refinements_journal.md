@@ -309,12 +309,14 @@ select_five
 Refactoring refactoring and understanding more and more. Love it all. Just left off with refactoring the computer_places_piece and it's okay now, but I think I should still abstract the definition of the opponent marker to its own method. 
 
 NOTE: Cool way to rename a key in ruby:
-
 `hash[:new_key] = hash.delete(:old_key)`
-
-This assigns the old_key to the new_key while creating the new_key.
+_this assigns the old_key to the new_key while creating the new_key_
 
 K, back to it, I am experimenting now with being able to pass just the symbol as an argument and see if that will work. This would be a great way to cut down on parameter length and make it more readable too.
 
+## small but important things here
 One thing that is certain, I have to stick with user_1(player or computer) or user1(X or O) but not both.
-:markers could be better defined within the board hash
+
+- [x] :user_1 to user1_title ?
+- [x] :markers could be better defined within the board hash. perhaps :player_markers ?
+- [ ] maybe change cycle to users_hsh?
