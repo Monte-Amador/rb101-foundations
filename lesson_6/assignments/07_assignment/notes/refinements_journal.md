@@ -5,13 +5,13 @@ Some of the best places for me to have the growth I'm looking for came by way of
 
 
 ## Refactor todos UI:
-- [ ] rubocop with 0.86
+- [x] rubocop with 0.86
 - [ ] add numbers for individual squares so that the user interface can help improve the user experience.
-- [ ] BOARD NUMBERS: this could be as simple as replacing the INITIAL_MARKER with the `num` value from the initializing method. I got this to work but it would be a lot nicer if the numbers were only there for a specified amount of time considering the distraction. Or maybe until there is a mark on the board then the numbers could go back to being just empty strings.
+- [ ] BOARD NUMBERS: this could be as simple as replacing the INITIAL_MARKER with the `num` value from the initializing method. I got this to work but it would be a lot nicer if the numbers were only there for a specified amount of time considering the distraction. One option would be to display the numbers from the board and keep it there until a specified amount of time or until the first player picks a number.
 
 ## Refactor Logic Practice:
-- [h] Let's take out the redundancy of the round_loop multiple break statements and see if it's possible (it is) to break it into a single move and break statement.
-- [ ] refactor the joiner and validate joiner method correctly
+- [x] Let's take out the redundancy of the round_loop multiple break statements and see if it's possible (it is) to break it into a single move and break statement.
+- [x] refactor the joiner and validate joiner method correctly
 - [x] Let's work on abstracting the logic that is happening within the round loop beginning with the case statement.
 
 - [x] the computer will currently always take square 5 as it's first move. This may not necessarily be a bug but it's a bit of a side-effect. Perhaps better to skip the square 5 if the board is empty first and instead opt for a random square? --this works using the random choice and having the computer go first so it follows that it would work as well with selecting that the computer goes first, however it isn't working when the user goes first. It should pick 5 if the user has already marked a square and 5 is still available.-- testing in `irb` in how to chain conditions through an if/elsif statement. As I thought the multi-conditional if/elsif statement does support that logic. 
@@ -62,7 +62,6 @@ The problem is that now that the marks are interchangable depending on who the u
 
 -----------------------------------------------------------------------------------------------
 
-NOTE: got the score to update and needs further testing now. It looks like I can consolidate the `first_turn` and `second_turn` assignments into their own methods and clear them in the process since they reside within the `round_loop`. I marked it in the comment within the markers_v2 file
 
 ### Bonus Features File List of user inputs to validate:
 - [x] ask_who_goes_first (string, %w(p, c, r))
@@ -107,16 +106,18 @@ So instead of trying to see if the error happens again, I'm going to pause on th
 
 This has been a great cool project to understand the benefit of mutating the caller and how that can be very useful in a program like this.
 
+## `round_loop` redundancy
 In order to remove the redundancy, we need a way to call a single method and have that method call the first_player and second_player method depending on who's turn it is. So for example, if the player is player1 then the first move is first_player. the round_loop tests to see if someone has won or there is a tie, if not we iterate through the roun_loop again and this time the same method that returned the first_player in the previous iteration now returns the second_player. (can a hash hold a method?) and so forth. 
 
 1. We know that the display_player_markers method assigns the player1 and player2 variables corectly from user input.
 2. We also know that first_player and second_player are associated correctly to player1 and player2.
 3. We can add a counter to the round loop with it beginning at 0. Then we can create a method that calls either first_player or second_player depending on if the counter is even or odd. Then we update the counter after every turn and reset the counter at the end of the round (counter should never be more than the array.size for available initial squares.
 
-Great, so that worked but now I'm sensing in my gut that anything more than 3 parameters isn't very readable or enjoyable to look at. So the major refactoring here will be to intialize the user choice and the computer choice as their own methods. This way, perhaps I can remove these two items from all the methods that call them and instead pass them in as self-contained methods that return their respective values.
+## Refactoring Lessons Deep Dive
+One of the larger methods I had inadvertenly created was setting up the users based off the user input at the beginning of the game. As I was going through the logical steps and edge case scenarios, the method grew. Although it worked, there were too many parameters to pass and this was a clue to me that I needed to abstract a lot of the logic into separate methods. I've kept the notes below for archive purposes because it was a helpful look into the initial way I began to craft a solution to the problem. Although it would technically work, it was unmaintainable, and extremely difficult to follow even if I was the one who wrote it. However, this was an excellent way for me to better understand why the importance of abstraction in logic is key to better coding. 
 
-First up: user_choice
-Currently the `user_choice` is an empty string, that gets passed to the `round_loop` as a `user_input` parameter. This same parameter gets passed to `display_players_markers`. The `display_players_markers` gets used every iteration within the `round_loop` however, we don't need to case the `user_input` after it's been intialized. Therefore, let's move the case `user_input` into a `user_input(user_choice)` method that can handle the setting of each user once.
+## First up: `user_choice`
+The `user_choice` is an empty string, that gets passed to the `round_loop` as a `user_input` parameter. This same parameter gets passed to `display_players_markers`. The `display_players_markers` gets used every iteration within the `round_loop` however, we don't need to case the `user_input` after it's been intialized. Therefore, let's move the case `user_input` into a `user_input(user_choice)` method that can handle the setting of each user once.
 This will leave the `display_players_markers` to simply output the markers instead of the heavy lifting it has to do upon each iteration through each round.
 
 1. initialize a user_input(user_choice) method that takes the user_choice string
@@ -129,16 +130,13 @@ We create a local variable to hold the input from the user but we don't necessar
 Third up: reset_local_var
 We can strip out the player1 and player2 from that since we can instead have the intialize user handle that. Perhaps all of the local variables actually? actually nevermind, resetting the user_choice once the user actually chooses doesn't work.
 
-# ::LEFT-OFF:: 
-
-Fourth up: first_turns and second_turns ::LEFT-OFF::
+Fourth up: first_turns and second_turns
 Currently I'm calling it from all around the methods as so much depends on them. If when I'm initializing the users, I could also create a hash to hold their values, I could then at least get rid of the local varialbes (player1 and player2) and then call them at the very lease as parameters like so: `hsh[:player1]`. 
 
-I think I am making this more complex than necessary. Trying to have a hash evoke a method doesn't seem like a good solution. I know I can re-write the set_user method in order to keep the redundancy down, however it will still contain a multiple condition within. What I really want is to remove the if/else conditional within the case statement that also contains another case statement.
+### Deepening My Understanding of The Hash
+I still think there's something to this hash since it can hold a lot of values. In fact there is already a hash that is holding `:player` and `:computer` so if i were to mold an idea after something like that...
 
-I still think there's something to this hash since it can hold a lot of values. In fact there is already a stash that is holding `:player` and `:computer` so if i were to mold an idea after something like that...
-
-the case statement is all about if this condition is true, than do that so working with the set_user method we can call the method and use a hash to hold the values that are valid_choices (we are already using something like that when we are passing the valid_choices array to the validation method I created ['p', 'c', 'r'] so there's no reason we can't bake this array into the hash itself as the value to the key, value pair `:valid_user_choices => [ 'p', 'c', 'r' ]`.
+What I really want is to remove the if/else conditional within the case statement that also contains another case statement. The case statement is all about if this condition is true, than do that so working with the set_user method we can call the method and use a hash to hold the values that are valid_choices (we are already using something like that when we are passing the valid_choices array to the validation method I created ['p', 'c', 'r'] so there's no reason we can't bake this array into the hash itself as the value to the key, value pair `:valid_user_choices => [ 'p', 'c', 'r' ]`.
 
 So let's work through this a little bit for the validate_user_input(str, data_arr, type) method I created. It now takes an input (in the form of a string remember), an _array_ (valid_choices array), and a string to denote what type of validation it needs to perform. A typical method call would normally be: 
 
@@ -165,7 +163,6 @@ One nice side-effect is that we can now call hsh[:r] to return the array ['p', '
 3. if both are not empty, then clear their values.
 4. whichever is the first variable to not be empty gets assigned the argument passed
 
-::LEFT-OFF:: 
 The below method hasn't been tested yet, best to try this in a separate file I think to fully test return values. We still need a way to assign and validate the users_choice.
 
 NOTE: that running the method does permanently modify the hash so this should only be run at the start of each match, not round, otherwise we need to reset the user_hsh[:r] value. Also, we need to intialize the users_hsh at the beginning of every match like we do with the board.

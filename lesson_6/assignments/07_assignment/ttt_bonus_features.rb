@@ -1,3 +1,23 @@
+=begin
+
+Thank you for taking the time to review the code to my solution for the TTT
+Bonus Features. I really enjoyed the challenge that this assignment has given
+me and I took an approach that focused not on clever solutions, as I wanted to
+explore the fundamentals more. So although I know there are methods that exist
+and provide a more succinct way to do some of the things I sketched out below,
+I wanted to come up with my own solutions and methods to further deepen the
+understanding of these first principles.
+
+1. Using rubocop 0.86.0
+2. Regarding Bonus feature #5b, I made the computer choose square 5 if it was
+available, but I also added an intentional clause to make sure it wasn't it
+wasn't the very first move. This alleviated the computer from choosing square 5
+every time the computer went first. The way it is now, when the computer goes
+first it picks random so it may pick square 5 but it's not as deliberate. I did
+this as a way to further test my approach to problem solutions and allow the
+game to have an organic feel to it, no matter who went first.
+
+=end
 WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
                 [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # cols
                 [[1, 5, 9], [3, 5, 7]] # diagonals
@@ -7,8 +27,16 @@ PLAYER1_MARKER = 'X'
 PLAYER2_MARKER = 'O'
 
 ###########################################
-# Initialize Methods
+# initialize helpers
 ###########################################
+
+def reset_local_var(variable, *vars)
+  variable.clear
+  if vars
+    vars.each(&:clear)
+  end
+end
+
 def clear_screen
   system('clear') || system('cls')
 end
@@ -22,6 +50,186 @@ def prompt(msg)
   puts "=> #{msg}"
 end
 
+###########################################
+# initialize methods
+###########################################
+
+def initialize_users
+  { p: 'Player',
+    c: 'Computer',
+    r: ['p', 'c'],
+    valid_user_inputs: ['p', 'c', 'r'],
+    user_choice: '',
+    computer_choice: '',
+    user1_title: '',
+    user2_title: '' }
+end
+
+def initialize_board
+  new_board = {}
+  (1..9).each { |num| new_board[num] = INITIAL_MARKER }
+  new_board[:player_markers] = { user1: PLAYER1_MARKER, user2: PLAYER2_MARKER }
+  new_board
+end
+
+def initialize_score
+  { player: 0, computer: 0 }
+end
+
+###########################################
+# retrieve/inspect
+###########################################
+
+def validate_joiner_array(squares)
+  !!squares.is_a?(Array)
+end
+
+def joiner_iteration(squares, delimeter, conjunction)
+  output = ''
+  squares.each_with_index do |value, idx|
+    output << if idx < (squares.size - 1)
+                "#{value}#{delimeter}"
+              else
+                "#{conjunction} #{value}"
+              end
+  end
+  output
+end
+
+def joiner(squares, delimeter = ', ', conjunction = 'or')
+  if validate_joiner_array(squares)
+    string_output = ''
+    case squares.size
+    when 1 then string_output << squares[0].to_s
+    when 2
+      string_output << ("#{squares[0]} #{conjunction} #{squares[1]}")
+    when 3..9
+      string_output << joiner_iteration(squares, delimeter, conjunction)
+    else
+      prompt "There was a problem with the array size"
+    end
+    string_output
+  else
+    prompt 'Sorry, please provide a valid array as an argument.'
+  end
+end
+
+def validate_integer_input(int)
+  int.to_i if int.to_i.to_s == int
+end
+
+def integer_in_range(str, range)
+  return nil if !validate_integer_input(str)
+  int = str.to_i
+  case range.size
+  when 2
+    return int if int.between?(range[0], range[1])
+  when 1
+    return int if range.join.to_i == int
+  else
+    display_error
+  end
+end
+
+def string_in_range(str, range)
+  test_string = range.join(' ').split
+  string = str.strip.downcase
+  string if test_string.include?(string)
+end
+
+def val_user_input(str, data_arr, type)
+  case type.downcase
+  when 'integer'
+    integer_in_range(str, data_arr)
+  when 'string'
+    string_in_range(str, data_arr)
+  else
+    display_error
+  end
+end
+
+def empty_squares(brd)
+  brd.keys.select { |num| brd[num] == INITIAL_MARKER }
+end
+
+def board_full?(brd)
+  empty_squares(brd).empty?
+end
+
+def someone_won?(brd, users_hsh)
+  !!detect_winner(brd, users_hsh)
+end
+
+def detect_winner(brd, users_hsh)
+  WINNING_LINES.each do |line|
+    if brd.values_at(line[0], line[1], line[2]).count(PLAYER1_MARKER) == 3
+      return users_hsh[:user1_title]
+    elsif brd.values_at(line[0], line[1], line[2]).count(PLAYER2_MARKER) == 3
+      return users_hsh[:user2_title]
+    end
+  end
+  nil
+end
+
+def match_winner?(hsh, rounds)
+  winner = hsh.select do |key, value|
+    key if value == rounds
+  end
+  winner.to_a.flatten[0].to_s.capitalize
+end
+
+def selection(brd, user)
+  selected_squares = brd.each_with_object([]) do |(key, value), arr|
+    arr << key if value == brd[:player_markers][user]
+  end
+  selected_squares
+end
+
+def priority(range_arr)
+  attention = WINNING_LINES.each_with_object([]) do |line, arr|
+    arr << (line - range_arr)
+  end
+  attention.keep_if { |arr| arr.size == 1 }
+end
+
+def valid_offense(brd, win_range)
+  if win_range.empty? == false
+    win = win_range.flatten
+    win.keep_if { |num| empty_squares(brd).include?(num) }
+    win if win.empty? == false
+  end
+end
+
+def detect_offense(brd, computer)
+  if valid_offense(brd, priority(selection(brd, computer)))
+    valid_offense(brd, priority(selection(brd, computer))).sample
+  end
+end
+
+def valid_defense(brd, threat_range)
+  if threat_range.empty? == false
+    threats = threat_range.flatten
+    threats.keep_if { |num| empty_squares(brd).include?(num) }
+    threats if threats.empty? == false
+  end
+end
+
+def detect_defense(brd, opponent)
+  if valid_defense(brd, priority(selection(brd, opponent)))
+    valid_defense(brd, priority(selection(brd, opponent))).sample
+  end
+end
+
+def select_five(brd, opponent)
+  if (empty_squares(brd).include?(5)) && (!selection(brd, opponent).empty?)
+    5
+  end
+end
+###########################################
+# output
+###########################################
+
+# rubocop:disable Metrics/AbcSize
 def display_board(brd)
   puts ''
   puts '     |     |'
@@ -37,47 +245,7 @@ def display_board(brd)
   puts '     |     |'
   puts ''
 end
-
-def initialize_board
-  new_board = {}
-  (1..9).each { |num| new_board[num] = INITIAL_MARKER }
-  new_board
-end
-
-def initialize_score
-  { player: 0, computer: 0 }
-end
-# refactor join method
-def join(arr, delimeter = ', ', conjunction = 'or')
-  if validate_join_array(arr)
-    string_output = ''
-    case arr.size
-    # refactor output
-    when 0 then string_output << 'Sorry, you have to at least provide an array as an argument.'
-    when 1 then string_output << arr[0].to_s
-    when 2
-      string_output << ("#{arr[0]} #{conjunction} #{arr[1]}")
-    else
-      arr.each_with_index do |item, idx|
-        string_output << if idx < (arr.size - 1)
-                           "#{item}#{delimeter}"
-                         else
-                           "#{conjunction} #{item}"
-                         end
-      end
-    end
-    string_output
-  else
-    'Sorry, please provide a valid array as an argument.'
-  end
-end
-
-###########################################
-# Retrieve/inspect Values
-###########################################
-def validate_join_array(arr)
-  !!arr.is_a?(Array)
-end
+# rubocop:enable Metrics/AbcSize
 
 def display_error
   error = <<~MSG
@@ -88,132 +256,6 @@ def display_error
   prompt error
 end
 
-def validate_integer_input(int)
-  return false if int.to_i.to_s != int
-    int.to_i
-end
-
-def integer_in_range(str, range)
-  return false if !validate_integer_input(str)
-  int = str.to_i
-  case range.size
-  when 2
-    return int if int.between?(range[0], range[1])
-    return false
-  when 1
-    return int if range.join.to_i == int
-    return false
-  else
-    display_error
-    return nil
-  end
-end
-
-def string_in_range(str, range)
-  test_string = range.join(' ').split
-  string = str.strip.downcase
-  return string if test_string.include?(string)
-  return false
-end
-
-def validate_user_input(str, data_arr, type)
-  case type.downcase
-  when 'integer'
-    integer_in_range(str, data_arr)
-  when 'string'
-    string_in_range(str, data_arr)
-  else
-    display_error
-  end 
-end
-
-def empty_squares(brd)
-  brd.keys.select { |num| brd[num] == INITIAL_MARKER }
-end
-
-def board_full?(brd)
-  empty_squares(brd).empty?
-end
-
-def someone_won?(brd, first_turn, second_turn)
-  !!detect_winner(brd, first_turn, second_turn)
-end
-
-def detect_winner(brd, first_turn, second_turn)
-  WINNING_LINES.each do |line|
-    return "#{first_turn}" if brd.values_at(line[0], line[1], line[2]).count(PLAYER1_MARKER) == 3
-    return "#{second_turn}" if brd.values_at(line[0], line[1], line[2]).count(PLAYER2_MARKER) == 3
-  end
-  nil
-end
-
-def match_winner?(hsh, rounds)
-  winner = hsh.select do |key, value|
-    key if value == rounds
-  end
-  winner.to_a.flatten[0].to_s.capitalize
-end
-
-
-def player_squares(brd, player_marker)
-  player_selected_squares = brd.each_with_object([]) do |(key, value), arr|
-    arr << key if value == player_marker 
-  end
-  player_selected_squares
-end
-
-def computer_squares(brd, computer_marker)
-  computer_selected_squares = brd.each_with_object([]) do |(key, value), arr|
-    arr << key if value == computer_marker 
-  end
-  computer_selected_squares
-end
-
-def valid_offense(win_range, valid_squares)
-  if win_range.empty? == false
-    win = win_range.flatten
-    win.keep_if {|num| valid_squares.include?(num)}
-    win if win.empty? == false
-  end
-end
-
-def priority(range_arr)
-  attention = WINNING_LINES.each_with_object([]) do |line, arr|
-    arr << (line - range_arr)
-  end 
-  attention.keep_if { |arr| arr.size == 1 }
-end
-
-def detect_offense(brd, valid_squares, computer_marker)
-  valid_offense(priority(computer_squares(brd, computer_marker)), valid_squares)
-end
- 
-def valid_defense(threat_range, valid_squares)
-  if threat_range.empty? == false
-    threats = threat_range.flatten
-    threats.keep_if {|num| valid_squares.include?(num)}
-    threats if threats.empty? == false
-  end
-end
-
-def detect_defense(brd, valid_squares, player_marker) 
-  valid_defense(priority(player_squares(brd, player_marker)), valid_squares)
-end
-
-def choose_five(brd, valid_squares, player_marker)
-  !!(valid_squares.include?(5)) && (player_squares(brd, player_marker).empty? == false)
-end
-###########################################
-# Output
-###########################################
-def display_available_choices(arr)
-  message = <<~MSG
-  Choose an available square
-  #{join(arr)}
-  MSG
-  prompt message
-end
-
 def display_invalid_choice
   message = <<~MSG
   Sorry, 
@@ -222,70 +264,12 @@ def display_invalid_choice
   prompt message
 end
 
-def display_score(score)
-  score = <<~MSG
-  Current Scores:
-  Player: #{score[:player]}
-  Computer: #{score[:computer]}
-  MSG
-  prompt(score)
-end
-
-def display_round_standings(brd, score, first_turn, second_turn)
-  if someone_won?(brd, first_turn, second_turn)
-    update_board(brd)
-    prompt "#{detect_winner(brd, first_turn, second_turn)} won!"
-    update_score(score, brd, first_turn, second_turn)
-    sleep(2)
-  else
-    update_board(brd)
-    prompt "It's a tie!"
-    sleep(2)
-  end
-end
-
 def display_welcome_message
   welcome_prompt = <<~MSG
   Play Tic Tac Toe against the computer!
   MSG
   prompt(welcome_prompt)
 end
-
-def ask_who_goes_first(str)
-  loop do
-    who = <<~MSG
-    Who would you like to go first?
-    (p)layer, (c)omputer, or (r)andom
-    (valid choices are p,c, or r)
-    MSG
-    prompt who
-    answer = gets.chomp
-    valid_inputs = %w(p c r)
-    string_input = validate_user_input(answer, valid_inputs, 'string')
-    str << string_input if string_input
-    break if str != ''
-    prompt 'sorry, please input a valid choice.'
-  end
-end
-
-def ask_how_many_rounds
-  rounds = ''
-  loop do
-    message = <<~MSG
-    How many rounds 
-    do you want to play?
-    (max rounds = 5)
-    MSG
-    prompt message
-    answer = gets.chomp
-    answer = '1' if answer == ''
-    valid_inputs = [1,5]
-    rounds = validate_user_input(answer, valid_inputs, 'integer')
-    break if rounds != false
-    prompt 'sorry, please input a valid number 1-5'
-    end
-    rounds
-  end
 
 def display_match_rules(rounds)
   match_params = <<~MSG
@@ -304,6 +288,34 @@ def display_match_summary(score, rounds)
   prompt message
 end
 
+def display_round_standings(brd, score, users_hsh)
+  update_board(brd)
+  if someone_won?(brd, users_hsh)
+    prompt "#{detect_winner(brd, users_hsh)} won!"
+    update_score(score, brd, users_hsh)
+  else
+    prompt "It's a tie!"
+  end
+  sleep(2)
+end
+
+def display_score(score)
+  score = <<~MSG
+  Current Scores:
+  Player: #{score[:player]}
+  Computer: #{score[:computer]}
+  MSG
+  prompt(score)
+end
+
+def display_available_choices(squares)
+  message = <<~MSG
+  Choose an available square
+  #{joiner(squares)}
+  MSG
+  prompt message
+end
+
 def display_closing
   message = <<~MSG
   Thanks for playing Tic Tac Toe!
@@ -312,20 +324,54 @@ def display_closing
   prompt message
 end
 
-def ask_play_again(play)
+###########################################
+# input
+###########################################
+
+def ask_who_goes_first(hsh)
   loop do
-    reset_local_var(play)
+    who = <<~MSG
+    Who would you like to go first?
+    (p)layer, (c)omputer, or (r)andom
+    (valid choices are p,c, or r)
+    MSG
+    prompt who
+    answer = gets.chomp
+    string_input = val_user_input(answer, hsh[:valid_user_inputs], 'string')
+    hsh[:user_choice] << string_input if string_input
+    break if hsh[:user_choice] != ''
+    prompt 'sorry, please input a valid choice.'
+  end
+end
+
+def ask_how_many_rounds(arr)
+  rounds = ''
+  loop do
+    message = <<~MSG
+    How many rounds do you
+    want to play? (max. 5)
+    MSG
+    prompt message
+    answer = gets.chomp
+    answer = '1' if answer == ''
+    rounds = val_user_input(answer, arr, 'integer')
+    break if rounds
+    prompt 'sorry, please input a valid number 1-5'
+  end
+  rounds
+end
+
+def ask_play_again(valid_input)
+  loop do
     prompt 'Play another match?(y/n)'
-    play << gets.chomp.downcase
+    play = gets.chomp.downcase
     play = 'y' if play == ''
-    valid_input = %w(y n)
-    answer = validate_user_input(play, valid_input, 'string') 
-    case answer
+    case val_user_input(play, valid_input, 'string')
     when 'y'
       clear_screen
       break
     when 'n'
-      break
+      return 'n'
     else
       prompt 'sorry, "y" or "n" please'
     end
@@ -333,21 +379,47 @@ def ask_play_again(play)
 end
 
 ###########################################
-# Modify Values
+# modify values
 ###########################################
-def reset_local_var(var_1, *vars)
-  var_1.clear
-  if vars
-    vars.each { |item| item.clear }
+
+def create_user_one(hsh, sym)
+  hsh[:user1_title] << hsh[sym]
+end
+
+def create_user_two(hsh)
+  hsh[:user2_title] << hsh[:p] if hsh[:user1_title] == 'Computer'
+  hsh[:user2_title] << hsh[:c] if hsh[:user1_title] == 'Player'
+end
+
+def establish_user_order(hsh, sym)
+  create_user_one(hsh, sym)
+  create_user_two(hsh)
+end
+
+def computer_chooses(hsh)
+  if hsh[:computer_choice] == ''
+    hsh[:computer_choice] << hsh[:r].sample
+  end
+  establish_user_order(hsh, hsh[:computer_choice].to_sym)
+end
+
+def assign_users(hsh)
+  if hsh[:user1_title] && hsh[:user2_title] != ''
+    reset_local_var(hsh[:user1_title], hsh[:user2_title])
+  end
+  if hsh[:user_choice] == 'r'
+    computer_chooses(hsh)
+  else
+    establish_user_order(hsh, hsh[:user_choice].to_sym)
   end
 end
 
-def update_score(score, brd, first_turn, second_turn)
-  score[:player] += 1 if detect_winner(brd, first_turn, second_turn).include?('Player')
-  score[:computer] += 1 if detect_winner(brd, first_turn, second_turn).include?('Computer')
+def update_score(score, brd, users_hsh)
+  score[:player] += 1 if detect_winner(brd, users_hsh).include?('Player')
+  score[:computer] += 1 if detect_winner(brd, users_hsh).include?('Computer')
 end
 
-def player_places_piece!(brd, player_marker)
+def player_places_piece!(brd, player)
   square = ''
   loop do
     display_available_choices(empty_squares(brd))
@@ -355,123 +427,87 @@ def player_places_piece!(brd, player_marker)
     break if empty_squares(brd).include?(square)
     display_invalid_choice
   end
-  brd[square] = player_marker 
-end
- 
-def computer_places_piece!(brd, valid_squares, computer_marker, opponent_marker)
-  if detect_offense(brd, valid_squares, computer_marker)
-    square = detect_offense(brd, valid_squares, computer_marker).sample
-  elsif detect_defense(brd, valid_squares, opponent_marker)
-    square = detect_defense(brd, valid_squares, opponent_marker).sample
-  elsif choose_five(brd, valid_squares, opponent_marker)
-    square = 5
-  else
-    square = valid_squares.sample
-  end
-  brd[square] = computer_marker if square != nil
+  brd[square] = brd[:player_markers][player]
 end
 
-def set_user(turn, str)
-  turn.clear
-  turn << "#{str}"
+def computer_places_piece!(brd, computer, opponent)
+  square = if detect_offense(brd, computer)
+             detect_offense(brd, computer)
+           elsif detect_defense(brd, opponent)
+             detect_defense(brd, opponent)
+           elsif select_five(brd, opponent)
+             select_five(brd, opponent)
+           else
+             empty_squares(brd).sample
+           end
+  brd[square] = brd[:player_markers][computer]
 end
 
-def first_player(brd, first_turn) 
-  case first_turn
+def first_player(brd, users_hsh)
+  case users_hsh[:user1_title]
   when 'Player'
-    player_places_piece!(brd, PLAYER1_MARKER)
+    player_places_piece!(brd, :user1)
   when 'Computer'
-    computer_places_piece!(brd, empty_squares(brd), PLAYER1_MARKER, PLAYER2_MARKER)
+    computer_places_piece!(brd, :user1, :user2)
   end
 end
-  
-def second_player(brd, second_turn) 
-  case second_turn 
+
+def second_player(brd, users_hsh)
+  case users_hsh[:user2_title]
   when 'Computer'
-    computer_places_piece!(brd, empty_squares(brd), PLAYER2_MARKER, PLAYER1_MARKER)
+    computer_places_piece!(brd, :user2, :user1)
   when 'Player'
-    player_places_piece!(brd, PLAYER2_MARKER)
+    player_places_piece!(brd, :user2)
   end
 end
 
-# refactor display_players_markers logic into separate methods
-def display_players_markers(user_input, random_choice, first_turn, second_turn)
-  case user_input
-  when 'p'
-    set_user(first_turn, 'Player')
-    set_user(second_turn, 'Computer')
-  when 'c'
-    set_user(first_turn, 'Computer')
-    set_user(second_turn, 'Player')
-  when 'r'
-    if random_choice == ''
-      valid_choices = %w(p c)
-      random_choice << valid_choices.sample
-      case random_choice
-      when 'p'
-        set_user(first_turn, 'Player')
-        set_user(second_turn, 'Computer')
-      when 'c'
-        set_user(first_turn, 'Computer')
-        set_user(second_turn, 'Player')
-      end
-    else
-      random_choice
-    end
-  else
-    prompt "error"     
-  end
-  prompt "#{first_turn} = 'X', #{second_turn} = 'O'"
+def display_players_markers(brd, users_hsh)
+  user_markers = <<~MSG
+  Player Markers:
+  #{users_hsh[:user1_title]} = #{brd[:player_markers][:user1]}, 
+  #{users_hsh[:user2_title]} = #{brd[:player_markers][:user2]}
+  MSG
+  prompt user_markers
 end
 
-def display_player(player)
-  player
+def iterate_users(brd, counter, users_hsh)
+  first_player(brd, users_hsh) if counter.even?
+  second_player(brd, users_hsh) if counter.odd?
 end
 
-# refactor: better way to pass less parameters?
-def round_loop(brd, score, user_input, random_choice, first_turn, second_turn)
+def round_loop(brd, score, users_hsh)
+  counter = 0
   loop do
-    update_board(brd) 
-    display_players_markers(user_input, random_choice, first_turn, second_turn)
+    update_board(brd)
+    display_players_markers(brd, users_hsh)
     display_score(score)
-    first_player(brd, first_turn)
-    update_board(brd) 
-    break if someone_won?(brd, first_turn, second_turn) || board_full?(brd)
-    # possible to remove rest of block
-    # by way of abstracting the first and second turns into a method that potentially assigns either the first or the second to a single 'player' and changes over for each consecutive round.
-    display_players_markers(user_input, random_choice, first_turn, second_turn)
-    display_score(score)
-    second_player(brd, second_turn)
-    update_board(brd) 
-    break if someone_won?(brd, first_turn, second_turn) || board_full?(brd)
+    iterate_users(brd, counter, users_hsh)
+    update_board(brd)
+    counter += 1
+    break if someone_won?(brd, users_hsh) || board_full?(brd)
     clear_screen
   end
-  display_round_standings(brd, score, first_turn, second_turn)
+  display_round_standings(brd, score, users_hsh)
 end
 
 ###########################################
-# Game Logic
+# call game
 ###########################################
-computer_choice = ''
-user_choice = ''
-play_again = ''
-player1 = ''
-player2 = ''
-loop do 
+loop do
+  users = initialize_users
   display_welcome_message
-  ask_who_goes_first(user_choice)
-  num_rounds = ask_how_many_rounds
+  ask_who_goes_first(users)
+  assign_users(users)
+  num_rounds = ask_how_many_rounds([1, 5])
   display_match_rules(num_rounds)
   sleep(3)
-  current_score = initialize_score 
-  loop do 
+  current_score = initialize_score
+  loop do
     board = initialize_board
-    round_loop(board, current_score, user_choice, computer_choice, player1, player2)
+    round_loop(board, current_score, users)
     break if current_score.value?(num_rounds)
-  end 
-  reset_local_var(computer_choice, user_choice, player1, player2)
+  end
   display_match_summary(current_score, num_rounds)
-  ask_play_again(play_again)
-  break if play_again == 'n'
+  break if ask_play_again(['y', 'n']) == 'n'
 end
 display_closing
