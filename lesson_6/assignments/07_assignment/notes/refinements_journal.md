@@ -313,3 +313,8 @@ NOTE: Cool way to rename a key in ruby:
 `hash[:new_key] = hash.delete(:old_key)`
 
 This assigns the old_key to the new_key while creating the new_key.
+
+K, back to it, I am experimenting now with being able to pass just the symbol as an argument and see if that will work. This would be a great way to cut down on parameter length and make it more readable too.
+
+One thing that is certain, I have to stick with user_1(player or computer) or user1(X or O) but not both.
+:markers could be better defined within the board hash

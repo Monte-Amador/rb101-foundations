@@ -48,7 +48,7 @@ def initialize_users
     user_choice: '',
     computer_choice: '',
     user_1: '',
-    user_2: '', }
+    user_2: '' }
 end
 
 def initialize_board
@@ -163,57 +163,52 @@ def match_winner?(hsh, rounds)
   winner.to_a.flatten[0].to_s.capitalize
 end
 
-# def player_squares(brd, player_mark)
-#   player_selected_squares = brd.each_with_object([]) do |(key, value), arr|
-#     arr << key if value == player_mark
-#   end
-#   player_selected_squares
-# end
-
-def square_select(brd, mark)
+def square_select(brd, user)
   selected_squares = brd.each_with_object([]) do |(key, value), arr|
-    arr << key if value == mark
+    arr << key if value == brd[:markers][user]
   end
   selected_squares
 end
-# see if you can remove valid_squares
-def valid_offense(win_range, valid_squares)
+
+def valid_offense(brd, win_range)
   if win_range.empty? == false
     win = win_range.flatten
-    win.keep_if { |num| valid_squares.include?(num) }
+    win.keep_if { |num| empty_squares(brd).include?(num) }
     win if win.empty? == false
   end
 end
 
-def prioritize(range_arr)
+def priority(range_arr)
   attention = WINNING_LINES.each_with_object([]) do |line, arr|
     arr << (line - range_arr)
   end
   attention.keep_if { |arr| arr.size == 1 }
 end
 
-def detect_offense(brd, mark)
-  if valid_offense(prioritize(square_select(brd, mark)), empty_squares(brd))
-    valid_offense(prioritize(square_select(brd, mark)), empty_squares(brd)).sample
+def detect_offense(brd, computer)
+  if valid_offense(brd, priority(square_select(brd, computer)))
+    valid_offense(brd, priority(square_select(brd, computer))).sample
   end
 end
 
-def valid_defense(threat_range, valid_squares)
+def valid_defense(brd, threat_range)
   if threat_range.empty? == false
     threats = threat_range.flatten
-    threats.keep_if { |num| valid_squares.include?(num) }
+    threats.keep_if { |num| empty_squares(brd).include?(num) }
     threats if threats.empty? == false
   end
 end
 
-def detect_defense(brd, mark)
-  if valid_defense(prioritize(square_select(brd, mark)), empty_squares(brd))
-    valid_defense(prioritize(square_select(brd, mark)), empty_squares(brd)).sample
+def detect_defense(brd, opponent)
+  if valid_defense(brd, priority(square_select(brd, opponent)))
+    valid_defense(brd, priority(square_select(brd, opponent))).sample
   end
 end
 
-def select_five(brd, player_mark)
-  5 if (empty_squares(brd).include?(5)) && (!square_select(brd, player_mark).empty?)
+def select_five(brd, opponent)
+  if (empty_squares(brd).include?(5)) && (!square_select(brd, opponent).empty?)
+    5
+  end
 end
 ###########################################
 # Output
@@ -331,13 +326,12 @@ def display_closing
   prompt message
 end
 
-def ask_play_again
-  play = ''
+def ask_play_again(valid_input)
+  # play = ''
   loop do
     prompt 'Play another match?(y/n)'
     play = gets.chomp.downcase
     play = 'y' if play == ''
-    valid_input = %w(y n)
     answer = validate_user_input(play, valid_input, 'string')
     case answer
     when 'y'
@@ -399,7 +393,7 @@ def update_score(score, brd, cycle)
   score[:computer] += 1 if detect_winner(brd, cycle).include?('Computer')
 end
 
-def player_places_piece!(brd, cycle, marker)
+def player_places_piece!(brd, player)
   square = ''
   loop do
     display_available_choices(empty_squares(brd))
@@ -407,18 +401,12 @@ def player_places_piece!(brd, cycle, marker)
     break if empty_squares(brd).include?(square)
     display_invalid_choice
   end
-  brd[square] = marker
+  brd[square] = brd[:markers][player]
 end
 
-
-def computer_places_piece!(brd, cycle, marker)
-  opponent = if marker == brd[:markers][:user1]
-                    brd[:markers][:user2]
-                  else
-                    brd[:markers][:user1]
-                  end
-  square = if detect_offense(brd, marker)
-             detect_offense(brd, marker)
+def computer_places_piece!(brd, computer, opponent)
+  square = if detect_offense(brd, computer)
+             detect_offense(brd, computer)
            elsif detect_defense(brd, opponent)
              detect_defense(brd, opponent)
            elsif select_five(brd, opponent)
@@ -426,24 +414,24 @@ def computer_places_piece!(brd, cycle, marker)
            else
              empty_squares(brd).sample
            end
-  brd[square] = marker
+  brd[square] = brd[:markers][computer]
 end
 
 def first_player(brd, cycle)
   case cycle[:user_1]
   when 'Player'
-    player_places_piece!(brd, cycle, brd[:markers][:user1])
+    player_places_piece!(brd, :user1)
   when 'Computer'
-    computer_places_piece!(brd, cycle, brd[:markers][:user1])
+    computer_places_piece!(brd, :user1, :user2)
   end
 end
 
 def second_player(brd, cycle)
   case cycle[:user_2]
   when 'Computer'
-    computer_places_piece!(brd, cycle, brd[:markers][:user2])
+    computer_places_piece!(brd, :user2, :user1)
   when 'Player'
-    player_places_piece!(brd, cycle, brd[:markers][:user2])
+    player_places_piece!(brd, :user2)
   end
 end
 
@@ -495,6 +483,6 @@ loop do
     break if current_score.value?(num_rounds)
   end
   display_match_summary(current_score, num_rounds)
-  break if ask_play_again == 'n'
+  break if ask_play_again(['y', 'n']) == 'n'
 end
 display_closing
