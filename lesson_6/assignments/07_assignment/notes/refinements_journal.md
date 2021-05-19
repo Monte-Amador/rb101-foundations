@@ -287,3 +287,29 @@ So with that, starting with the round_loop parameters, I simply added the users_
 ::LEFT-OFF:: refactored round_loop well. Fun too. Now moving to focus on the heinous computer_places_piece! and refactor the constants and parameters to include instead the cycle parameter from the round loop which is the users hash. The users hash now holds the user markers too so we can use that instead of the constants where applicable. 
 
 With coffee... save as file 13, double check everything is working, commit and refactor the constants out of problematic places starting with computer_places_piece!
+
+first issue when trying to refactor the computer_places_piece is that the way the method is being called right now, it needs to pass two parameters in order to swtich the player marker depeneding on if the computer goes first or second. This seems to be a very primitive way to create the solution in the context of the rest of the refactoring.
+
+what would be nice is to just pass the hash through as is since it holds both values or similarly as with the player marker being passed as one parameter. However that's being passed as one key value pair from the intial hash, would that still give us access to the whole hash? The answer is no.
+
+the next option would be to pass the whole hash in and have the computer_places_piece sort through it but that seems to be a waste of the case method that we are using for determining first and second player through those two methods.
+
+So with that being stated, I think the answer would like it rebuilding the first and second player methods in a way that is more portable than the current setup. Once we establish the first user, we should be able to just set the second user since there are only two users. No need to duplicate the case statment again. I think we have something already in line with this with the former set_users method where the create_user_one is a one liner and the create_user_two is a simple two liner for assignment.
+
+Part of the confusion seems to be that the first_player method is actually being used to assign a marker for the first player even though it's already been setup from the beginning. so [:user_1]=>'Player' will always be PLAYER1_MARKER due to the way the game is set up. If the computer goes first then [:user_2]=>'Player' will always be PLAYER2_MARKER. so if [:user_1]=>'Computer' then computer mark will be [:mark][:user1]
+
+after further exploration, it looks as though my approach to this was in error. What i'm really trying to do is limit the amount of arguments that need to be passed. if the computer_places_piece method has 3 parameters, it still creates a larger method to do the assignments. A better approach is abstracting the logic into separate methods at this point.
+
+So the way forward was to realize that I had made a mistake early on wtih the creation of the valid_squares parameter thinking that it had to be there to pass along. I completely forgot that the method didn't need to be passed into an argument, it can be called from inside the method itself. Now with that knowledge, I will refactor the following three methods called from within the computer_places_piece! method.
+
+detect_offense
+detect_defense
+select_five
+
+Refactoring refactoring and understanding more and more. Love it all. Just left off with refactoring the computer_places_piece and it's okay now, but I think I should still abstract the definition of the opponent marker to its own method. 
+
+NOTE: Cool way to rename a key in ruby:
+
+`hash[:new_key] = hash.delete(:old_key)`
+
+This assigns the old_key to the new_key while creating the new_key.
