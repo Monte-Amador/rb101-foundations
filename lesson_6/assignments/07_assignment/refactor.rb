@@ -162,7 +162,7 @@ def match_winner?(hsh, rounds)
   winner.to_a.flatten[0].to_s.capitalize
 end
 
-def selection(brd, user)
+def selected_squares(brd, user)
   selected_squares = brd.each_with_object([]) do |(key, value), arr|
     arr << key if value == brd[:player_markers][user]
   end
@@ -176,36 +176,21 @@ def priority(range_arr)
   attention.keep_if { |arr| arr.size == 1 }
 end
 
-def valid_offense(brd, win_range)
-  if win_range.empty? == false
-    win = win_range.flatten
-    win.keep_if { |num| empty_squares(brd).include?(num) }
-    win if win.empty? == false
+def valid_move(brd, range_arr)
+  if !range_arr.empty?
+    move = range_arr.flatten
+    move.keep_if { |num| empty_squares(brd).include?(num) }
+    move if !move.empty?
   end
 end
 
-def detect_offense(brd, computer)
-  if valid_offense(brd, priority(selection(brd, computer)))
-    valid_offense(brd, priority(selection(brd, computer))).sample
-  end
-end
-
-def valid_defense(brd, threat_range)
-  if threat_range.empty? == false
-    threats = threat_range.flatten
-    threats.keep_if { |num| empty_squares(brd).include?(num) }
-    threats if threats.empty? == false
-  end
-end
-
-def detect_defense(brd, opponent)
-  if valid_defense(brd, priority(selection(brd, opponent)))
-    valid_defense(brd, priority(selection(brd, opponent))).sample
-  end
+def detect_move(brd, user)
+  next_move = valid_move(brd, priority(selected_squares(brd, user)))
+  next_move.sample if next_move
 end
 
 def select_five(brd, opponent)
-  if (empty_squares(brd).include?(5)) && (!selection(brd, opponent).empty?)
+  if (empty_squares(brd).include?(5)) && (!selected_squares(brd, opponent).empty?)
     5
   end
 end
@@ -464,15 +449,25 @@ def player_places_piece!(brd, player)
 end
 
 def computer_places_piece!(brd, computer, opponent)
-  square = if detect_offense(brd, computer)
-             detect_offense(brd, computer)
-           elsif detect_defense(brd, opponent)
-             detect_defense(brd, opponent)
+  square = if detect_move(brd, computer)
+             detect_move(brd, computer)
+           elsif detect_move(brd, opponent)
+             detect_move(brd, opponent)
            elsif select_five(brd, opponent)
              select_five(brd, opponent)
            else
              empty_squares(brd).sample
            end
+           
+  #square = if detect_offense(brd, computer)
+  #           detect_offense(brd, computer)
+  #         elsif detect_defense(brd, opponent)
+  #           detect_defense(brd, opponent)
+  #         elsif select_five(brd, opponent)
+  #           select_five(brd, opponent)
+  #         else
+  #           empty_squares(brd).sample
+  #         end
   brd[square] = brd[:player_markers][computer]
 end
 
@@ -501,6 +496,8 @@ def display_players_markers(brd, users_hsh)
   #{users_hsh[:user2_title]} = #{brd[:player_markers][:user2]}
 
   MSG
+  # look at the possibility of including a line break in an eof document
+  # to remove this possibly unnecessary hard return
   prompt user_markers
 end
 
