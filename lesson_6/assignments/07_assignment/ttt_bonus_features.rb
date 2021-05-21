@@ -46,7 +46,7 @@ def initialize_users
     user2_title: '' }
 end
 
-def init_game_markers(marker_choice)
+def initialize_game_markers(marker_choice)
   case marker_choice
   when 'default'
     { user1: PLAYER1_MARKER, user2: PLAYER2_MARKER }
@@ -61,7 +61,7 @@ def initialize_board(marker_choice)
   marker_choice = 'default' if !marker_choice
   new_board = {}
   (1..9).each { |num| new_board[num] = num }
-  new_board[:player_markers] = init_game_markers(marker_choice)
+  new_board[:player_markers] = initialize_game_markers(marker_choice)
   new_board
 end
 
