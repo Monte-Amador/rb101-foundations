@@ -1,30 +1,11 @@
-=begin
-
-Thank you for taking the time to review the code to my solution for the TTT
-Bonus Features. I really enjoyed the challenge that this assignment has given
-me and I took an approach that focused not on clever solutions, as I wanted to
-explore the fundamentals more. So although I know there are methods that exist
-and provide a more succinct way to do some of the things I sketched out below,
-I wanted to come up with my own solutions and methods to further deepen the
-understanding of these first principles.
-
-1. Using rubocop 0.86.0
-2. Regarding Bonus feature #5b, I made the computer choose square 5 if it was
-available, but I also added an intentional clause to make sure it wasn't it
-wasn't the very first move. This alleviated the computer from choosing square 5
-every time the computer went first. The way it is now, when the computer goes
-first it picks random so it may pick square 5 but it's not as deliberate. I did
-this as a way to further test my approach to problem solutions and allow the
-game to have an organic feel to it, no matter who went first.
-
-=end
 WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
                 [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # cols
                 [[1, 5, 9], [3, 5, 7]] # diagonals
-
-INITIAL_MARKER = ' '
-PLAYER1_MARKER = 'X'
-PLAYER2_MARKER = 'O'
+MINMAX_ROUNDS = [1, 5]
+YES_NO = ['y', 'n']
+MARKERS = ['x', 'o']
+PLAYER1_MARKER = MARKERS[0].upcase
+PLAYER2_MARKER = MARKERS[1].upcase
 
 ###########################################
 # initialize helpers
@@ -65,10 +46,22 @@ def initialize_users
     user2_title: '' }
 end
 
-def initialize_board
+def init_game_markers(marker_choice)
+  case marker_choice
+  when 'default'
+    { user1: PLAYER1_MARKER, user2: PLAYER2_MARKER }
+  when 'o'
+    { user1: PLAYER2_MARKER, user2: PLAYER1_MARKER }
+  when 'x'
+    { user1: PLAYER2_MARKER, user2: PLAYER1_MARKER }
+  end
+end
+
+def initialize_board(marker_choice)
+  marker_choice = 'default' if !marker_choice
   new_board = {}
-  (1..9).each { |num| new_board[num] = INITIAL_MARKER }
-  new_board[:player_markers] = { user1: PLAYER1_MARKER, user2: PLAYER2_MARKER }
+  (1..9).each { |num| new_board[num] = num }
+  new_board[:player_markers] = init_game_markers(marker_choice)
   new_board
 end
 
@@ -115,6 +108,9 @@ def joiner(squares, delimeter = ', ', conjunction = 'or')
 end
 
 def validate_integer_input(int)
+  if int.include?('.')
+    return false
+  end
   int.to_i if int.to_i.to_s == int
 end
 
@@ -149,7 +145,7 @@ def val_user_input(str, data_arr, type)
 end
 
 def empty_squares(brd)
-  brd.keys.select { |num| brd[num] == INITIAL_MARKER }
+  brd.keys.select { |num| brd[num] == num }
 end
 
 def board_full?(brd)
@@ -161,10 +157,12 @@ def someone_won?(brd, users_hsh)
 end
 
 def detect_winner(brd, users_hsh)
+  player1 = brd[:player_markers][:user1]
+  player2 = brd[:player_markers][:user2]
   WINNING_LINES.each do |line|
-    if brd.values_at(line[0], line[1], line[2]).count(PLAYER1_MARKER) == 3
+    if brd.values_at(line[0], line[1], line[2]).count(player1) == 3
       return users_hsh[:user1_title]
-    elsif brd.values_at(line[0], line[1], line[2]).count(PLAYER2_MARKER) == 3
+    elsif brd.values_at(line[0], line[1], line[2]).count(player2) == 3
       return users_hsh[:user2_title]
     end
   end
@@ -178,50 +176,35 @@ def match_winner?(hsh, rounds)
   winner.to_a.flatten[0].to_s.capitalize
 end
 
-def selection(brd, user)
-  selected_squares = brd.each_with_object([]) do |(key, value), arr|
+def select_squares(brd, user)
+  select_squares = brd.each_with_object([]) do |(key, value), arr|
     arr << key if value == brd[:player_markers][user]
   end
-  selected_squares
+  select_squares
 end
 
-def priority(range_arr)
-  attention = WINNING_LINES.each_with_object([]) do |line, arr|
+def survey_board(range_arr)
+  alert = WINNING_LINES.each_with_object([]) do |line, arr|
     arr << (line - range_arr)
   end
-  attention.keep_if { |arr| arr.size == 1 }
+  alert.keep_if { |arr| arr.size == 1 }
 end
 
-def valid_offense(brd, win_range)
-  if win_range.empty? == false
-    win = win_range.flatten
-    win.keep_if { |num| empty_squares(brd).include?(num) }
-    win if win.empty? == false
+def valid_move(brd, range_arr)
+  if !range_arr.empty?
+    move = range_arr.flatten
+    move.keep_if { |num| empty_squares(brd).include?(num) }
+    move if !move.empty?
   end
 end
 
-def detect_offense(brd, computer)
-  if valid_offense(brd, priority(selection(brd, computer)))
-    valid_offense(brd, priority(selection(brd, computer))).sample
-  end
+def detect_move(brd, user)
+  next_move = valid_move(brd, survey_board(select_squares(brd, user)))
+  next_move.sample if next_move
 end
 
-def valid_defense(brd, threat_range)
-  if threat_range.empty? == false
-    threats = threat_range.flatten
-    threats.keep_if { |num| empty_squares(brd).include?(num) }
-    threats if threats.empty? == false
-  end
-end
-
-def detect_defense(brd, opponent)
-  if valid_defense(brd, priority(selection(brd, opponent)))
-    valid_defense(brd, priority(selection(brd, opponent))).sample
-  end
-end
-
-def select_five(brd, opponent)
-  if (empty_squares(brd).include?(5)) && (!selection(brd, opponent).empty?)
+def select_square_five(brd, opponent)
+  if (empty_squares(brd).include?(5)) && (!select_squares(brd, opponent).empty?)
     5
   end
 end
@@ -251,7 +234,6 @@ def display_error
   error = <<~MSG
   please check input type (string/integer) 
   and all valid input strings 
-  (e.g. ['Yes y no n'])
   MSG
   prompt error
 end
@@ -303,7 +285,7 @@ def display_score(score)
   score = <<~MSG
   Current Scores:
   Player: #{score[:player]}
-  Computer: #{score[:computer]}
+  Computer: #{score[:computer]}\n
   MSG
   prompt(score)
 end
@@ -327,6 +309,57 @@ end
 ###########################################
 # input
 ###########################################
+
+def assign_markers(hsh, choice)
+  case choice
+  when 'o'
+    if hsh[:user1_title] == 'Player'
+      choice
+    end
+  when 'x'
+    if hsh[:user2_title] == 'Player'
+      choice
+    end
+  end
+end
+
+def display_marker_choices
+  question = <<~MSG
+  Please choose between
+  (#{MARKERS[0]}), or (#{MARKERS[1]}).
+  MSG
+  prompt question
+end
+
+def choose_marker(hsh)
+  choice = ''
+  loop do
+    display_marker_choices
+    answer = gets.chomp
+    break if answer == ''
+    choice = val_user_input(answer, MARKERS, 'string')
+    break if choice
+    display_invalid_choice
+  end
+  assign_markers(hsh, choice)
+end
+
+def ask_marker_preference(hsh, valid_input)
+  choice = ''
+  loop do
+    question = <<~MSG
+    Would you like to choose 
+    your own marker? (y)es, or (n)o
+    MSG
+    prompt question
+    answer = gets.chomp
+    answer = 'n' if answer == ''
+    choice = val_user_input(answer, valid_input, 'string')
+    break if choice
+    display_invalid_choice
+  end
+  choose_marker(hsh) if choice == 'y'
+end
 
 def ask_who_goes_first(hsh)
   loop do
@@ -423,7 +456,8 @@ def player_places_piece!(brd, player)
   square = ''
   loop do
     display_available_choices(empty_squares(brd))
-    square = gets.chomp.to_i
+    choice = gets.chomp
+    square = validate_integer_input(choice)
     break if empty_squares(brd).include?(square)
     display_invalid_choice
   end
@@ -431,12 +465,12 @@ def player_places_piece!(brd, player)
 end
 
 def computer_places_piece!(brd, computer, opponent)
-  square = if detect_offense(brd, computer)
-             detect_offense(brd, computer)
-           elsif detect_defense(brd, opponent)
-             detect_defense(brd, opponent)
-           elsif select_five(brd, opponent)
-             select_five(brd, opponent)
+  square = if detect_move(brd, computer)
+             detect_move(brd, computer)
+           elsif detect_move(brd, opponent)
+             detect_move(brd, opponent)
+           elsif select_square_five(brd, opponent)
+             select_square_five(brd, opponent)
            else
              empty_squares(brd).sample
            end
@@ -465,7 +499,7 @@ def display_players_markers(brd, users_hsh)
   user_markers = <<~MSG
   Player Markers:
   #{users_hsh[:user1_title]} = #{brd[:player_markers][:user1]}, 
-  #{users_hsh[:user2_title]} = #{brd[:player_markers][:user2]}
+  #{users_hsh[:user2_title]} = #{brd[:player_markers][:user2]}\n
   MSG
   prompt user_markers
 end
@@ -494,20 +528,22 @@ end
 # call game
 ###########################################
 loop do
+  clear_screen
   users = initialize_users
   display_welcome_message
   ask_who_goes_first(users)
   assign_users(users)
-  num_rounds = ask_how_many_rounds([1, 5])
+  marker_preference = ask_marker_preference(users, YES_NO)
+  num_rounds = ask_how_many_rounds(MINMAX_ROUNDS)
   display_match_rules(num_rounds)
   sleep(3)
   current_score = initialize_score
   loop do
-    board = initialize_board
+    board = initialize_board(marker_preference)
     round_loop(board, current_score, users)
     break if current_score.value?(num_rounds)
   end
   display_match_summary(current_score, num_rounds)
-  break if ask_play_again(['y', 'n']) == 'n'
+  break if ask_play_again(YES_NO) == 'n'
 end
 display_closing
