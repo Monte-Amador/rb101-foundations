@@ -45,10 +45,17 @@ def initialize_users
     user2_title: '' }
 end
 
-def initialize_board
+def initialize_board(marker_choice = 'default')
   new_board = {}
   (1..9).each { |num| new_board[num] = num }
-  new_board[:player_markers] = { user1: PLAYER1_MARKER, user2: PLAYER2_MARKER }
+  case marker_choice
+  when 'o'
+    new_board[:player_markers] = { user1: PLAYER2_MARKER, user2: PLAYER1_MARKER }
+  when 'x'
+    new_board[:player_markers] = { user1: PLAYER2_MARKER, user2: PLAYER1_MARKER }
+  else
+    new_board[:player_markers] = { user1: PLAYER1_MARKER, user2: PLAYER2_MARKER }
+  end
   new_board
 end
 
@@ -145,10 +152,12 @@ def someone_won?(brd, users_hsh)
 end
 
 def detect_winner(brd, users_hsh)
+  player1 = brd[:player_markers][:user1]
+  player2 = brd[:player_markers][:user2]
   WINNING_LINES.each do |line|
-    if brd.values_at(line[0], line[1], line[2]).count(PLAYER1_MARKER) == 3
+    if brd.values_at(line[0], line[1], line[2]).count(player1) == 3
       return users_hsh[:user1_title]
-    elsif brd.values_at(line[0], line[1], line[2]).count(PLAYER2_MARKER) == 3
+    elsif brd.values_at(line[0], line[1], line[2]).count(player2) == 3
       return users_hsh[:user2_title]
     end
   end
@@ -297,7 +306,7 @@ end
 ###########################################
 # input
 ###########################################
-def ask_marker_preference(hsh, valid_input, brd)
+def ask_marker_preference(hsh, valid_input)
   choice = ''
   loop do
     message = <<~MSG
@@ -311,10 +320,10 @@ def ask_marker_preference(hsh, valid_input, brd)
     break if choice
     display_invalid_choice
   end
-    choose_marker(hsh, brd) if choice == 'y'
+    choose_marker(hsh) if choice == 'y'
 end
 
-def choose_marker(hsh, brd)
+def choose_marker(hsh)
   choice = ''
   loop do
     question = <<~MSG
@@ -329,19 +338,18 @@ def choose_marker(hsh, brd)
     break if choice
     display_invalid_choice
   end
+  # abstract the case into its own method and pass that return value from method to the marker_preference variable
+  # got it all working with the exception if the player chooses random and then chooses x as the marker and the computer goes first, the computer becomes x
+  # computer going first overrides the player marker choice.
   case choice
   when 'o'
     if hsh[:user1_title] == 'Player'
-     brd[:player_markers][:user1] = PLAYER2_MARKER
-     brd[:player_markers][:user2] = PLAYER1_MARKER
+      choice 
     end
-    p brd
   when 'x'
     if hsh[:user2_title] == 'Player'
-     brd[:player_markers][:user1] = PLAYER2_MARKER
-     brd[:player_markers][:user2] = PLAYER1_MARKER
+      choice
     end
-    p brd
   end
 end
 
@@ -530,14 +538,15 @@ loop do
   display_welcome_message
   ask_who_goes_first(users)
   assign_users(users)
+  marker_preference = ask_marker_preference(users, ['y', 'n'])
   num_rounds = ask_how_many_rounds([1, 5])
   display_match_rules(num_rounds)
   sleep(3)
   current_score = initialize_score
   loop do
-    board = initialize_board
-    # this works but needs refinement, there needs to be a better way to hold the value that the use chooses if the user chooses in case of a tie.
-    ask_marker_preference(users, ['y', 'n'], board)
+    board = initialize_board(marker_preference)
+    p board
+    sleep(5)
     round_loop(board, current_score, users)
     break if current_score.value?(num_rounds)
   end
@@ -545,3 +554,4 @@ loop do
   break if ask_play_again(['y', 'n']) == 'n'
 end
 display_closing
+# ::LEFT-OFF:: the player choosing marker preference needs further testing although it looks like it will work. However, there seems to be a different bug if the computer goes first, and the player chooses the preferred marker of 'X' at the end of the game it says the player won when it needs to say the comptuer won. This points to the detect_winner method possibly reading the markers but not the users? 
