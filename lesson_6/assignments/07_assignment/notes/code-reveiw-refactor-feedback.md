@@ -2,16 +2,16 @@
 
 - [x] It's a good idea to clear the screen at the start of the game in case there is already a significant amount of text in the console.
 - [x] I like that you let the player choose who goes first and the number of rounds they want to play! This is a good segue into the game itself. 👏
-- [ ] Another feature to possibly include is letting the player choose their marker. There is some input validation required for this as well.
+- [x] Another feature to possibly include is letting the player choose their marker. There is some input validation required for this as well.
 - [x] Good work displaying the current score for both the player and computer throughout the game.
 - [x] Consider making the numberings of the board squares always visible on the board, unless a marker is placed on that square.
-- [ ] Perhaps only allow integer values as valid square numbers. As-is, values like `2.2` are considered valid.
+- [x] Perhaps only allow integer values as valid square numbers. As-is, values like `2.2` are considered valid.
 - [x] I think there could be a little more visual separation between the player markers, the current scores, and the list of available squares.
 - [x] Great job displaying the overall winner of the tournament at the end.
 
 ## Rubocop
 
-- [x] No offenses; that's what I like to see! 💯
+- [x] No offenses; that's what I like to see!
 
 ## Source Code
 
