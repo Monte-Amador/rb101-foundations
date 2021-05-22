@@ -273,7 +273,7 @@ end
 def display_round_standings(brd, score, users_hsh)
   update_board(brd)
   if someone_won?(brd, users_hsh)
-    prompt "#{detect_winner(brd, users_hsh)} won!\n"
+    prompt "#{detect_winner(brd, users_hsh)} won!"
     update_score(score, brd, users_hsh)
   else
     prompt "It's a tie!"
