@@ -1,6 +1,6 @@
 hsh = {
-  dealer: [],
-  player: [],
+  dealer: { cards: [], score: '' },
+  player: { cards: [], score: '' },
   suits: { 
     hearts: {
       ace: [1, 11], 
@@ -33,3 +33,4 @@ hsh = {
   }
 }
 puts hsh[:suits][:spades][:ace].sample
+puts hsh.key
