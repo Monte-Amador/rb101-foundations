@@ -265,7 +265,7 @@ def display_match_summary(score, rounds)
   display_score(score)
   message = <<~MSG
   Game over, match win goes to: 
-  #{match_winner?(score, rounds)}!
+  #{match_winner?(score, rounds)}!\n
   MSG
   prompt message
 end
@@ -273,7 +273,7 @@ end
 def display_round_standings(brd, score, users_hsh)
   update_board(brd)
   if someone_won?(brd, users_hsh)
-    prompt "#{detect_winner(brd, users_hsh)} won!"
+    prompt "#{detect_winner(brd, users_hsh)} won!\n"
     update_score(score, brd, users_hsh)
   else
     prompt "It's a tie!"
