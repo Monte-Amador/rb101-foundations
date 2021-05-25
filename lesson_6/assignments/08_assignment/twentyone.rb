@@ -174,10 +174,9 @@ def dealer_turn(hsh, user)
   end
 end
 
-def play_again?
+def ask_play_again
   puts "play again?"
-  reply = gets.chomp
-  return false unless reply == 'y'
+  answer = gets.chomp
 end
 
 def someone_busted(hsh, player, dealer)
@@ -188,21 +187,19 @@ def someone_busted(hsh, player, dealer)
   end
 end
 
-loop do #outer loop
+loop do 
   round = initialize_twenty_one
-  loop do #inner loop
-    initial_deal(round, :player, :dealer)
-    puts "Dealer's Hand: #{display_cards(round, :dealer)}"
-    puts "Player's Hand: #{display_cards(round, :player)}"
-    sleep(1)
-    player_turn(round, :player)
-    sleep(1)
-    dealer_turn(round, :dealer)
-    if !someone_busted(round, :player, :dealer)
-      compare_hands(round, :player, :dealer)
-    else
-      puts "#{someone_busted(round, :player, :dealer)} Wins! Due to opponent bust"
-    end
-    break if play_again? == false
+  initial_deal(round, :player, :dealer)
+  puts "Dealer's Hand: #{display_cards(round, :dealer)}"
+  puts "Player's Hand: #{display_cards(round, :player)}"
+  sleep(1)
+  player_turn(round, :player)
+  sleep(1)
+  dealer_turn(round, :dealer)
+  if !someone_busted(round, :player, :dealer)
+    compare_hands(round, :player, :dealer)
+  else
+    puts "#{someone_busted(round, :player, :dealer)} Wins! Due to opponent bust"
   end
+  break if ask_play_again == 'n'
 end
