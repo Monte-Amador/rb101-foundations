@@ -34,23 +34,26 @@ We can also run the `Array#sample` method on the specified :deck hashes and thei
 7. COMPARE: cards and declare winner
 
 ## Operations
-- [ ] 21 > bust
-- [ ] INITIAL_DEAL: both player and dealer receive 2 cards each
+- [x] 21 > bust
+- [x] INITIAL_DEAL: both player and dealer receive 2 cards each
   - [ ] player can view both cards, but only one card(first) from dealer
 - [ ] LOOP: player inputs 'hit' for new card. 
   - [ ] break if player chooses to 'stay' || 'busts'
-- [ ] VALUES: all cards are standard values face values and 10(jack, queen, king) except ace
+- [x] VALUES: all cards are standard values face values and 10(jack, queen, king) except ace
 - [x] aces equate to 1 or 11 upon context
   - [x] ace = 11 unless total value of array busts, otherwise ace = 1
   - [x] how do we assign the value of ace if we have both values in an array?
-- [ ] bust = lose
+- [x] bust = lose
 - [ ] COMPARE:whoever is closest to 21 without busting = win
 - [ ] DEALER TURN: decides to hit or stay after player stays
   - [ ] dealer must hit until 17 >= total
-
+- [ ] not necessarily a bug, but whoever busts wins due to the fact that their total number of cards is higher. need to add additional logic to first test if player busted or won with 21 to begin with.
+  - [ ] wire up the detect_winner and bust? methods after every deal. If user won (21) or busted (> 21) exit the hand and declare winner. With a two player game we don't need any further dealing to other players.
+  - [ ] got it wired up but is is messy. ::LEFT-OFF:: start from cleaning up the logic and abstracting to simpler methods.
+  - [ ] if we make the optional parameter in the display_hand method, we can access the users as needed from the array that gets passed. E.g passing :player as an argument to an optional parameter returns the argument inside of an array [:player]. So we can pass that to the hash inside the method when we state it like: hsh[arr[0].to_sym] which turns the argument into a symbol.
 ## Coding up the Ace Method
-- get the total value of current cards[array]
-- upon having an ace, ace = 11 unless user_hand of cards > 21; then ace = 1
+- [ ] get the total value of current cards[array]
+- [ ] upon having an ace, ace = 11 unless user_hand of cards > 21; then ace = 1
 
 def aces(user, ace_arr)
   example = hsh[:diamonds][:ace] # => [1, 11]
@@ -67,25 +70,9 @@ end
 - ideal to have one generic method that iterates from the player to the dealer.
   - need a conditional to test which user is up (player/dealer) and choose method based on that
   - each user will need the ability to hit (invokes method)
-  - if user is dealer, hold on 17 and greater
-  - if user is player, need to invoke input 
+  - if user is dealer, hold on 17 and greater => dealer_hit_or_stay(hsh,user)
+  - if user is player, need to invoke ask_hit_or_stay method
     - (future thought: nice to have the option to choose who is dealer)
-
-def player_turn(hsh, user)
-  player_hand = hsh[user][:cards] # => array
-  loop do
-    puts ask_hit_or_stay
-    reply = gets.chomp # valid_choices: ['h', 's']
-    hit if reply == 'h' # => return hash {ace: [1, 11]]
-    if hit == [1, 11]
-      aces(user, ace_arr) 
-    else
-      hit
-    end
-    break if reply == 's'
-    break if bust? || twentyone?
-  end
-end
 
 ## Coding up the deal method
 We can set the variables as deck, suit, card and value in a method that first clears them if there are any values and then re-assigns them (as well as delete from the main hash) to their respective variables. We can then chain the variables together to target the specific value and modify the hash.
@@ -94,17 +81,29 @@ While working with the concept within the sample_from_deck method below, I came 
 
 The below pseudocode is working in part. I need to return and start testing from this initial place. One think I'm noticing however, is that it would be good to have the card show up along with the value. Right now, for example hsh[:player][:cards] returns an array of their value like so: [10, 11] but it would be ideal to have it look like [['K', 10], ['A', 11]] in order to be able to flatten them when looking at the user's cards. Yet we can still add up the sum of the value by targeting the inner arrays since their integers would always be in inner array[1].
 
-## Example Desired Output ::LEFT-OFF:: 
+## Example Desired Output 
 what we want here is for the cards hash to return an array with the card and it's value? Or rather the suit and the card would be better. We could hold their values in a separate array so we can work accordingly by returning the sum of the arrays. So we ultimately want the output to look something like Clubs: Jack 10. It's just an example for now so think about the desired output and work backwards. If we instead wanted the final values displayed as the card and the value, no nevermind that won't work as it would get confusing seeing the value along side of the face_value cards. 2 might look like 22. but this does pose the possibility of displaying the current total for the user to have so they know exactly where they are standing.
 
-::LEFT-OFF:: start working out the way to achieve the preferred output below
+start working out the way to achieve the preferred output below
 After having fixed the sample_from_deck behavior, now we'll turn our focus to the output. I know that I would like to have something along the lines of Suit, Card(s) and a rolling total like this: 
 
-    D-J(10), S-2(2) => Total: 12
-in the cards array we can specify the objects within their own nested array as the :cards value [ [suit[0], card[1], value[2]] ]and we can total up the value of each by totaling each nested array[2] to arrive at a hand total.
+    D-J(10), S-2(2) >>> Total: 12
+in the cards array we can specify the objects within their own arrays (nested) as the cards value. A first approach for each card within the parent :cards array:
 
-## Next up get total
-work out the bust? and twentyone? methods so that we can wire up the hit method.
+:cards=> [[suit[0], card[1], value[2]]]
+
+and we can total up the value of each by totaling each nested array[2] to arrive at a hand total like so:
+
+[:cards][0][2]
+
+we'll need to iterate through the [:cards] parent array and retrieve all the values from their respective positions. Thinking this through, providing a Array#select method would work as it would return an array with truthy values that can be denoted by being an integer or just calling the integer's position
+
+_Upon first looks with fresh eyes it also looks like I can make use of the joiner method I wrote with [ttt_bonus_features.rb](file:///Users/monte/Projects/launch-school/rb101-programming-foundations/lesson_6/assignments/07_assignment/ttt_bonus_features.rb) when thinking of how to customize the output where necessary_
+
+## Bust || 21
+- [x] work out the bust? and twentyone? methods so that we can wire up the hit method.
+
+## Aces
 
 def initialize_twenty_one(hsh)
   twenty_one = {
@@ -143,45 +142,19 @@ def initialize_twenty_one(hsh)
   }
 end
 
-def reset_local_var(variable, *vars)
-  variable.clear
-  if vars
-    vars.each(&:clear)
-  end
-end
+## May 24, 2021 Changes
+- change hash values from face_cards to face_values, added methods clear_screen, display_hands for more clear user interface. 
+- Debug and refactor display_cards method to include custom output string (need to abstract extra logic into new method). i
+- Deal method has a new approach (not yet integrated) to show the new single card dealt to user. 
+- debug bust? and twentyone? methods. 
+- Creation of match loop and hand loop for the implementation of score keeping
+  also allows us to use one deck during a round (if necessary).
 
-def sample_from_deck(hsh, user)
-  user_hand = hsh[user][:cards]
-  # check to make sure the values are being cleared upon every call for the method
-  deck = hsh[:deck]
-  suit = deck.keys.sample
-  valid_cards = deck[suit].select { |key, arr| arr.size > 0 }
-  return false if !valid_cards
-  card = valid_cards.keys.sample
-  value = deck[suit][card].sample
-  deck[suit][card].delete(value)
-  user_hand << value if value
-  user_hand
-end
-
-def initial_deal(hsh, player, dealer)
-  player_hand = hsh[player][:cards]
-  dealer_hand = hsh[dealer][:cards]
-  while player_hand.size < 2 
-    player_hand << sample_from_deck(hsh, player)
-  end
-  while dealer_hand.size < 2 
-    dealer_hand << sample_from_deck(hsh, dealer)
-  end
-end
-
-def bust?(hsh, user) 
-  if hsh[user][:cards].sum > 21 == true
-end
-
-def twentyone?(hsh, user) 
-  if hsh[user][:cards].sum == 21
-end
+## refinements
+- [ ] Also would be nice to say blackjack if player has a face card and ace upon deal
+- [ ] would be nice to only dispaly face cards in current format [JD(10)] and display face values with their value and suit [2H(2)]
+- [ ] Need a way to hide first card from dealer
+- [ ] make sure we can always see the cards like the ttt board
 
 ## Blog post
 there's a sense of wonder now that the road blocks have gotten fewer and further between. I remember when i started the prepatory course and I could just sit there unawares of what I had just learned. I questioned many times whether i could stick through it as I continually felt lost. That's the bulk of how i went to bed every night for the 8 weeks it took me to finish. 
