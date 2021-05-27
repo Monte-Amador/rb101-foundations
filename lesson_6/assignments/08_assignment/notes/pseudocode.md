@@ -70,6 +70,20 @@ def aces(user, ace_arr)
     ace_arr[1]
   end
 end
+# 21 ::LEFT-OFF:: 
+what happens when the initial deal deals a player 21? The game isn't over yet, the dealer could have 21 and push. This is what to come back to and map out next.
+- [x] initial deal
+- [x] count player cards
+- [x] if 21 display "21" and move to dealer move
+- [x] dealer show hand
+- [x] dealer hits or stays
+- [x] compare cards and exit hand
+
+## Hide Dealer first card
+1. first card displays as "|X|" or hide completely
+2. must not show total for dealer
+3. when dealer's turn, re-display dealer's hand to show all cards and total
+4. f::LEFT-OFF:: ind a way to also display player's cards for comparison (user interface enhancement)
 
 ## Coding up the player turn
 - ideal to have one generic method that iterates from the player to the dealer.

@@ -35,13 +35,12 @@ def initialize_twenty_one
   }
 end
 
-def clear_screen(hsh)
+def clear_screen
   system('clear') || system('cls')
-  display_hands(hsh)
 end
 
 def display_hands(hsh)
-  puts "Dealer's Hand: #{display_cards(hsh, :dealer)}"
+  puts "Dealer's Hand: #{display_dealer_cards(hsh, :dealer)}"
   puts "Player's Hand: #{display_cards(hsh, :player)}"
 end
 
@@ -76,7 +75,7 @@ def deal(hsh, user)
   deck = hsh[:deck]
   suit = deck.keys.sample
   valid_cards = deck[suit].select { |key, arr| arr.size > 0 }
-  return false if !valid_cards # refactor error here?
+  #return false if !valid_cards # refactor error here?
   card = valid_cards.keys.sample
   value = deck[suit][card].sample
   card_output = card.to_s.capitalize[0]
@@ -89,6 +88,19 @@ def deal(hsh, user)
   end
   puts new_card.join
   user_hand << new_card
+end
+
+def display_dealer_cards(hsh, user)
+  display = []
+  hand = hsh[user][:cards]
+  hand.each do |arr|
+    output = []
+    output << arr[0..1]
+    output << "(#{arr[2]})"
+    display << output.join
+    end
+  display[0] = "|X|"
+  display.join(' ')
 end
 
 def display_cards(hsh, user)
@@ -111,6 +123,7 @@ def initial_deal(hsh, player, dealer)
   hsh[dealer][:cards] = []
   loop do
     deal(hsh, player)
+    puts "#{player.to_s.capitalize} got 21!" if twentyone?(hsh, player)
     deal(hsh, dealer)
     break if hsh[player][:cards].size && hsh[dealer][:cards].size == 2
   end
@@ -163,16 +176,19 @@ end
 
 def player_turn(hsh, user)
   loop do
+    display_hands(hsh)
     break if bust?(hsh, user) || twentyone?(hsh, user)
     puts "Would you like to (h)it or (s)tay?"
     reply = gets.chomp
     if reply == 'h'
       deal(hsh, user)
       sleep(1)
-      puts display_cards(hsh, user)
+      puts "#{user.to_s.capitalize}'s hand: #{display_cards(hsh, user)}"
+      puts "#{user.to_s.capitalize} got 21!" if twentyone?(hsh, user)
     elsif reply == 's'
       puts "Player chooses to stay!"
-      puts display_cards(hsh, user)
+      puts "#{user.to_s.capitalize}'s hand: #{display_cards(hsh, user)}"
+      sleep(3)
     else
       puts "Sorry, valid inputs are 'h, or s'"
     end
@@ -181,18 +197,15 @@ def player_turn(hsh, user)
 end
 
 def dealer_turn(hsh, user)
-  if bust?(hsh, :player)
-    return puts "Dealer wins becaue player busted!"
-  end
-  puts "Dealer must stay on 17 or higher"
   loop do
-    sleep(1)
-    break if hold_on_seventeen?(hsh, user) 
-    clear_screen(hsh)
-    deal(hsh, user)
+    break if bust?(hsh, :player)
+    clear_screen
     puts display_cards(hsh, user)
-    clear_screen(hsh)
+    puts "Dealer must stay on 17 or higher"
+    break if hold_on_seventeen?(hsh, user) 
+    deal(hsh, user)
     sleep(1)
+    puts display_cards(hsh, user)
     break if bust?(hsh, user) || twentyone?(hsh, user)
   end
 end
@@ -210,30 +223,14 @@ def someone_busted(hsh, player, dealer)
   end
 end
 
-def someone_twentyone(hsh, player, dealer)
-  if !!twentyone?(hsh, player)
-    "#{player.to_s.capitalize} has 21!"
-    "#{player.to_s.capitalize} wins!"
-  elsif !!twentyone?(hsh, dealer)
-    "#{dealer.to_s.capitalize} has 21!"
-    "#{dealer.to_s.capitalize} wins!"
-  end
-end
-
 loop do 
   round = initialize_twenty_one
   initial_deal(round, :player, :dealer)
-  clear_screen(round)
+  clear_screen
   sleep(1)
   player_turn(round, :player)
-  #someone_twentyone(round, :player, :dealer) if twentyone?(round, :player)
   sleep(1)
   dealer_turn(round, :dealer)
-  #someone_twentyone(round, :player, :dealer) if twentyone?(round, :dealer)
-
- #if !!someone_twentyone(round, :player, :dealer)
- #  return someone_twentyone(round, :player, :dealer)
- #end
 
   if !someone_busted(round, :player, :dealer)
     compare_hands(round, :player, :dealer)
