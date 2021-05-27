@@ -128,14 +128,13 @@ end
 def bust?(hsh, user) 
   total = []
   hsh[user][:cards].select {|item| total << item[2]}
-  #p "#{user.to_s.capitalize} busts!" if total.sum > 21
   total.sum > 21
 end
 
 def twentyone?(hsh, user) 
   total = []
   hsh[user][:cards].select {|item| total << item[2]}
-  puts "21 to #{user.to_s.capitalize}!" if total.sum == 21
+  total.sum == 21
 end
 
 def compare_hands(hsh, player, dealer)
@@ -205,9 +204,19 @@ end
 
 def someone_busted(hsh, player, dealer)
   if !!bust?(hsh, player)
-    dealer.to_s.capitalize
+    "#{player.to_s.capitalize} busts! #{dealer.to_s.capitalize} wins!"
   elsif !!bust?(hsh, dealer)
-    player.to_s.capitalize
+    "#{dealer.to_s.capitalize} busts! #{player.to_s.capitalize} wins!"
+  end
+end
+
+def someone_twentyone(hsh, player, dealer)
+  if !!twentyone?(hsh, player)
+    "#{player.to_s.capitalize} has 21!"
+    "#{player.to_s.capitalize} wins!"
+  elsif !!twentyone?(hsh, dealer)
+    "#{dealer.to_s.capitalize} has 21!"
+    "#{dealer.to_s.capitalize} wins!"
   end
 end
 
@@ -217,12 +226,19 @@ loop do
   clear_screen(round)
   sleep(1)
   player_turn(round, :player)
+  #someone_twentyone(round, :player, :dealer) if twentyone?(round, :player)
   sleep(1)
   dealer_turn(round, :dealer)
+  #someone_twentyone(round, :player, :dealer) if twentyone?(round, :dealer)
+
+ #if !!someone_twentyone(round, :player, :dealer)
+ #  return someone_twentyone(round, :player, :dealer)
+ #end
+
   if !someone_busted(round, :player, :dealer)
     compare_hands(round, :player, :dealer)
   else
-    puts "#{someone_busted(round, :player, :dealer)} Wins! Due to opponent bust"
+    puts "#{someone_busted(round, :player, :dealer)} "
   end
   break if ask_play_again == 'n'
 end

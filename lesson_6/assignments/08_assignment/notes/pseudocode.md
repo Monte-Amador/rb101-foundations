@@ -44,16 +44,21 @@ We can also run the `Array#sample` method on the specified :deck hashes and thei
   - [x] ace = 11 unless total value of array busts, otherwise ace = 1
   - [x] how do we assign the value of ace if we have both values in an array?
 - [x] bust = lose
-- [ ] COMPARE:whoever is closest to 21 without busting = win
-- [ ] DEALER TURN: decides to hit or stay after player stays
-  - [ ] dealer must hit until 17 >= total
-- [ ] not necessarily a bug, but whoever busts wins due to the fact that their total number of cards is higher. need to add additional logic to first test if player busted or won with 21 to begin with.
+- [x] COMPARE:whoever is closest to 21 without busting = win
+- [x] DEALER TURN: decides to hit or stay after player stays
+  - [x] dealer must hit until 17 >= total
+- [x] not necessarily a bug, but whoever busts wins due to the fact that their total number of cards is higher. need to add additional logic to first test if player busted or won with 21 to begin with.
   - [ ] wire up the detect_winner and bust? methods after every deal. If user won (21) or busted (> 21) exit the hand and declare winner. With a two player game we don't need any further dealing to other players.
-  - [ ] got it wired up but is is messy. ::LEFT-OFF:: start from cleaning up the logic and abstracting to simpler methods.
-  - [ ] if we make the optional parameter in the display_hand method, we can access the users as needed from the array that gets passed. E.g passing :player as an argument to an optional parameter returns the argument inside of an array [:player]. So we can pass that to the hash inside the method when we state it like: hsh[arr[0].to_sym] which turns the argument into a symbol.
-## Coding up the Ace Method
-- [ ] get the total value of current cards[array]
-- [ ] upon having an ace, ace = 11 unless user_hand of cards > 21; then ace = 1
+
+## Aces Method
+first need to think about the aces array as it currently stands, since there is only one ace for each suit it doesn't make sense to have two values inside of the ace to specify 1, 11. 
+
+if we simplify the function, what we are looking for is to assign the default value of any ace to 11 unless the player will bust. If the player will bust the the value for ace is 1.
+
+during the deal, we return the value from a valid_cards array via the select method. the card value is actually sampled from that array that we assign to the valid_cards variable.
+
+- [x] get the total value of current cards[array]
+- [x] upon having an ace, ace = 11 unless user_hand of cards > 21; then ace = 1
 
 def aces(user, ace_arr)
   example = hsh[:diamonds][:ace] # => [1, 11]
@@ -102,13 +107,6 @@ _Upon first looks with fresh eyes it also looks like I can make use of the joine
 
 ## Bust || 21
 - [x] work out the bust? and twentyone? methods so that we can wire up the hit method.
-
-## Aces
-first need to think about the aces array as it currently stands, since there is only one ace for each suit it doesn't make sense to have two values inside of the ace to specify 1, 11. 
-
-if we simplify the function, what we are looking for is to assign the default value of any ace to 11 unless the player will bust. If the player will bust the the value for ace is 1.
-
-during the deal, we return the value from a valid_cards array via the select method. the card value is actually sampled from that array that we assign to the valid_cards variable.
 
 - [x] if we inspect the card's value and find that it begins with an 'A' then we know it is an ace.
 - [x] if it is an ace, we need to inspect the current total of the player's hand (maybe we already pass that in during the deal) and if the ace(11) will make the player bust, then we re-assign the value of that ace to 1. (needs testing to ensure re-assignment will work since we later pass the value back when we delete it from the original deck)
