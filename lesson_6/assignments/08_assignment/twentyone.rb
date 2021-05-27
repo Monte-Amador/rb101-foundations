@@ -4,32 +4,32 @@ def initialize_twenty_one
     player: { cards: [], score: '' },
     deck: { 
       hearts: {
-        ace: [1, 11], 
+        face_values: [2, 3, 4, 5, 6, 7, 8, 9, 10],
         jack: [10], 
         queen: [10], 
         king: [10], 
-        face_values: [2, 3, 4, 5, 6, 7, 8, 9, 10]
+        ace: [11]
       },
       diamonds: {
-        ace: [1, 11], 
+        face_values: [2, 3, 4, 5, 6, 7, 8, 9, 10],
         jack: [10], 
         queen: [10], 
         king: [10], 
-        face_values: [2, 3, 4, 5, 6, 7, 8, 9, 10]
+        ace: [11]
       },
       clubs: {
-        ace: [1, 11], 
+        face_values: [2, 3, 4, 5, 6, 7, 8, 9, 10],
         jack: [10], 
         queen: [10], 
         king: [10], 
-        face_values: [2, 3, 4, 5, 6, 7, 8, 9, 10]
+        ace: [11]
       },
       spades: {
-        ace: [1, 11], 
+        face_values: [2, 3, 4, 5, 6, 7, 8, 9, 10],
         jack: [10], 
         queen: [10], 
         king: [10], 
-        face_values: [2, 3, 4, 5, 6, 7, 8, 9, 10]
+        ace: [11]
       },
     }
   }
@@ -41,8 +41,8 @@ def clear_screen(hsh)
 end
 
 def display_hands(hsh)
-  puts display_cards(hsh, :dealer)
-  puts display_cards(hsh, :player)
+  puts "Dealer's Hand: #{display_cards(hsh, :dealer)}"
+  puts "Player's Hand: #{display_cards(hsh, :player)}"
 end
 
 def reset_local_var(variable, *vars)
@@ -52,20 +52,42 @@ def reset_local_var(variable, *vars)
   end
 end
 
+def is_ace?(card)
+  card == 'A' 
+end
+
+def modify_ace_value!(arr)
+  arr.delete('11')
+  arr[2] = 1
+end
+
+def will_user_bust?(hsh, user)
+  total = []
+  hand = hsh[user][:cards]
+  hand.each do |arr|
+    total << arr[2]
+    end
+  total.sum >= 11
+end
+
 def deal(hsh, user)
   new_card = []
   user_hand = hsh[user][:cards]
   deck = hsh[:deck]
   suit = deck.keys.sample
   valid_cards = deck[suit].select { |key, arr| arr.size > 0 }
-  return false if !valid_cards
+  return false if !valid_cards # refactor error here?
   card = valid_cards.keys.sample
   value = deck[suit][card].sample
-  suit_output = suit.to_s.capitalize[0]
   card_output = card.to_s.capitalize[0]
+  suit_output = suit.to_s.capitalize[0]
   new_card << "#{card_output}"
   new_card << "#{suit_output}"
   new_card << deck[suit][card].delete(value)
+  if is_ace?(card_output) && will_user_bust?(hsh, user)
+    modify_ace_value!(new_card)
+  end
+  puts new_card.join
   user_hand << new_card
 end
 
@@ -143,19 +165,20 @@ end
 def player_turn(hsh, user)
   loop do
     break if bust?(hsh, user) || twentyone?(hsh, user)
-    puts display_cards(hsh, user)
     puts "Would you like to (h)it or (s)tay?"
     reply = gets.chomp
     if reply == 'h'
       deal(hsh, user)
+      sleep(1)
+      puts display_cards(hsh, user)
     elsif reply == 's'
       puts "Player chooses to stay!"
+      puts display_cards(hsh, user)
     else
       puts "Sorry, valid inputs are 'h, or s'"
     end
     break if reply == 's'
   end
-  puts display_cards(hsh, user)
 end
 
 def dealer_turn(hsh, user)
@@ -168,6 +191,7 @@ def dealer_turn(hsh, user)
     break if hold_on_seventeen?(hsh, user) 
     clear_screen(hsh)
     deal(hsh, user)
+    puts display_cards(hsh, user)
     clear_screen(hsh)
     sleep(1)
     break if bust?(hsh, user) || twentyone?(hsh, user)
@@ -190,8 +214,7 @@ end
 loop do 
   round = initialize_twenty_one
   initial_deal(round, :player, :dealer)
-  puts "Dealer's Hand: #{display_cards(round, :dealer)}"
-  puts "Player's Hand: #{display_cards(round, :player)}"
+  clear_screen(round)
   sleep(1)
   player_turn(round, :player)
   sleep(1)

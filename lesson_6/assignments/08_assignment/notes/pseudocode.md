@@ -104,55 +104,11 @@ _Upon first looks with fresh eyes it also looks like I can make use of the joine
 - [x] work out the bust? and twentyone? methods so that we can wire up the hit method.
 
 ## Aces
+first need to think about the aces array as it currently stands, since there is only one ace for each suit it doesn't make sense to have two values inside of the ace to specify 1, 11. 
 
-def initialize_twenty_one(hsh)
-  twenty_one = {
-    dealer: { cards: [], score: '' },
-    player: { cards: [], score: '' },
-    deck: { 
-      hearts: {
-        ace: [1, 11], 
-        jack: [10], 
-        queen: [10], 
-        king: [10], 
-        face_cards: [2, 3, 4, 5, 6, 7, 8, 9, 10]
-      },
-      diamonds: {
-        ace: [1, 11], 
-        jack: [10], 
-        queen: [10], 
-        king: [10], 
-        face_cards: [2, 3, 4, 5, 6, 7, 8, 9, 10]
-      },
-      clubs: {
-        ace: [1, 11], 
-        jack: [10], 
-        queen: [10], 
-        king: [10], 
-        face_cards: [2, 3, 4, 5, 6, 7, 8, 9, 10]
-      },
-      spades: {
-        ace: [1, 11], 
-        jack: [10], 
-        queen: [10], 
-        king: [10], 
-        face_cards: [2, 3, 4, 5, 6, 7, 8, 9, 10]
-      },
-    }
-  }
-end
+if we simplify the function, what we are looking for is to assign the default value of any ace to 11 unless the player will bust. If the player will bust the the value for ace is 1.
 
-## May 24, 2021 Changes
-- change hash values from face_cards to face_values, added methods clear_screen, display_hands for more clear user interface. 
-- Debug and refactor display_cards method to include custom output string (need to abstract extra logic into new method). i
-- Deal method has a new approach (not yet integrated) to show the new single card dealt to user. 
-- debug bust? and twentyone? methods. 
-- Creation of match loop and hand loop for the implementation of score keeping
-  also allows us to use one deck during a round (if necessary).
+during the deal, we return the value from a valid_cards array via the select method. the card value is actually sampled from that array that we assign to the valid_cards variable.
 
-## refinements
-- [ ] Also would be nice to say blackjack if player has a face card and ace upon deal
-- [ ] would be nice to only dispaly face cards in current format [JD(10)] and display face values with their value and suit [2H(2)]
-- [ ] Need a way to hide first card from dealer
-- [ ] make sure we can always see the cards like the ttt board
-
+- [x] if we inspect the card's value and find that it begins with an 'A' then we know it is an ace.
+- [x] if it is an ace, we need to inspect the current total of the player's hand (maybe we already pass that in during the deal) and if the ace(11) will make the player bust, then we re-assign the value of that ace to 1. (needs testing to ensure re-assignment will work since we later pass the value back when we delete it from the original deck)
