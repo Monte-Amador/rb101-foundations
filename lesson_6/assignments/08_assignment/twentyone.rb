@@ -39,16 +39,16 @@ def clear_screen
   system('clear') || system('cls')
 end
 
-def display_hands(hsh)
-  puts "Dealer's Hand: #{display_dealer_cards(hsh, :dealer)}"
-  puts "Player's Hand: #{display_cards(hsh, :player)}"
-end
-
 def reset_local_var(variable, *vars)
   variable.clear
   if vars
     vars.each(&:clear)
   end
+end
+
+def display_hands(hsh)
+  puts "Dealer's Hand: #{display_dealer_cards(hsh, :dealer)}"
+  puts "Player's Hand: #{display_cards(hsh, :player)}"
 end
 
 def is_ace?(card)
@@ -69,27 +69,6 @@ def will_user_bust?(hsh, user)
   total.sum >= 11
 end
 
-def deal(hsh, user)
-  new_card = []
-  user_hand = hsh[user][:cards]
-  deck = hsh[:deck]
-  suit = deck.keys.sample
-  valid_cards = deck[suit].select { |key, arr| arr.size > 0 }
-  #return false if !valid_cards # refactor error here?
-  card = valid_cards.keys.sample
-  value = deck[suit][card].sample
-  card_output = card.to_s.capitalize[0]
-  suit_output = suit.to_s.capitalize[0]
-  new_card << "#{card_output}"
-  new_card << "#{suit_output}"
-  new_card << deck[suit][card].delete(value)
-  if is_ace?(card_output) && will_user_bust?(hsh, user)
-    modify_ace_value!(new_card)
-  end
-  puts new_card.join
-  user_hand << new_card
-end
-
 def display_dealer_cards(hsh, user)
   display = []
   hand = hsh[user][:cards]
@@ -100,6 +79,12 @@ def display_dealer_cards(hsh, user)
     display << output.join
     end
   display[0] = "|X|"
+  p display
+  if display[1] == '(1)'
+    display[1] = '(1 or 11)'
+  elsif display[1] == '(11)'
+    display[1] = '(1 or 11)'
+  end
   display.join(' ')
 end
 
@@ -122,12 +107,37 @@ def initial_deal(hsh, player, dealer)
   hsh[player][:cards] = []
   hsh[dealer][:cards] = []
   loop do
-    deal(hsh, player)
+    deal(hsh, player, 'hide')
     puts "#{player.to_s.capitalize} got 21!" if twentyone?(hsh, player)
-    deal(hsh, dealer)
+    deal(hsh, dealer, 'hide')
     break if hsh[player][:cards].size && hsh[dealer][:cards].size == 2
   end
 end
+
+def deal(hsh, user, *hide)
+  new_card = []
+  user_hand = hsh[user][:cards]
+  deck = hsh[:deck]
+  suit = deck.keys.sample
+  valid_cards = deck[suit].select { |key, arr| arr.size > 0 }
+  #return false if !valid_cards # refactor error here?
+  card = valid_cards.keys.sample
+  value = deck[suit][card].sample
+  card_output = card.to_s.capitalize[0]
+  suit_output = suit.to_s.capitalize[0]
+  new_card << "#{card_output}"
+  new_card << "#{suit_output}"
+  new_card << deck[suit][card].delete(value)
+  if is_ace?(card_output) && will_user_bust?(hsh, user)
+    modify_ace_value!(new_card)
+  end
+  if hide == []
+  puts "#{user}'s new card: #{new_card.join}"
+  sleep(1)
+  end
+  user_hand << new_card
+end
+
 ###########################################
 # reduce redundancy
 ###########################################
@@ -180,15 +190,15 @@ def player_turn(hsh, user)
     break if bust?(hsh, user) || twentyone?(hsh, user)
     puts "Would you like to (h)it or (s)tay?"
     reply = gets.chomp
+    clear_screen
     if reply == 'h'
       deal(hsh, user)
       sleep(1)
-      puts "#{user.to_s.capitalize}'s hand: #{display_cards(hsh, user)}"
+      clear_screen
       puts "#{user.to_s.capitalize} got 21!" if twentyone?(hsh, user)
     elsif reply == 's'
       puts "Player chooses to stay!"
-      puts "#{user.to_s.capitalize}'s hand: #{display_cards(hsh, user)}"
-      sleep(3)
+      sleep(2)
     else
       puts "Sorry, valid inputs are 'h, or s'"
     end
@@ -200,12 +210,13 @@ def dealer_turn(hsh, user)
   loop do
     break if bust?(hsh, :player)
     clear_screen
-    puts display_cards(hsh, user)
+    puts "#{user.to_s.capitalize}'s hand: #{display_cards(hsh, user)}"
+    puts "#{:player.to_s.capitalize}'s hand: #{display_cards(hsh, :player)}"
     puts "Dealer must stay on 17 or higher"
     break if hold_on_seventeen?(hsh, user) 
     deal(hsh, user)
     sleep(1)
-    puts display_cards(hsh, user)
+    puts "#{user.to_s.capitalize}'s hand: #{display_cards(hsh, user)}"
     break if bust?(hsh, user) || twentyone?(hsh, user)
   end
 end
@@ -227,11 +238,10 @@ loop do
   round = initialize_twenty_one
   initial_deal(round, :player, :dealer)
   clear_screen
-  sleep(1)
+  #sleep(1)
   player_turn(round, :player)
-  sleep(1)
+  #sleep(1)
   dealer_turn(round, :dealer)
-
   if !someone_busted(round, :player, :dealer)
     compare_hands(round, :player, :dealer)
   else

@@ -70,7 +70,7 @@ def aces(user, ace_arr)
     ace_arr[1]
   end
 end
-# 21 ::LEFT-OFF:: 
+# 21 
 what happens when the initial deal deals a player 21? The game isn't over yet, the dealer could have 21 and push. This is what to come back to and map out next.
 - [x] initial deal
 - [x] count player cards
@@ -83,7 +83,16 @@ what happens when the initial deal deals a player 21? The game isn't over yet, t
 1. first card displays as "|X|" or hide completely
 2. must not show total for dealer
 3. when dealer's turn, re-display dealer's hand to show all cards and total
-4. f::LEFT-OFF:: ind a way to also display player's cards for comparison (user interface enhancement)
+4. find a way to also display player's cards for comparison (user interface enhancement)
+5. Dealer's hand: |X| card
+6. Player's Hand: AC(11), FS(7) >>> Total: 12
+7. would you like to hit or stay?
+8. input
+9. clear screen
+10. show single card
+11. reload total hand display (repeat)
+12. REFACTOR: one edge case is that if the computer has an ace as the first card and it is therefore hidden, and the dealer receives another ace, the value shows up as 1 for the second ace. Need to alter the second aces string to be something like(1 or 11).the point of approach to this problem may lie within the is_ace? method where it specifically targets arr[2] = 1. Perhaps we have the condition during the display_dealer_cards method that basically states the 1 or 11 for all aces (without modifying the actual hand, just the output)? That way when the display_cards method calls on the dealer's cards we have the correct values associated.
+13. ::LEFT-OFF:: got the logic in place during the display_dealear_cards method but can't seem to target the specific index. Pick up here and test the output of the display array (looks like the array will need a regex? ["|X|", "AH(11)"]
 
 ## Coding up the player turn
 - ideal to have one generic method that iterates from the player to the dealer.
@@ -124,3 +133,4 @@ _Upon first looks with fresh eyes it also looks like I can make use of the joine
 
 - [x] if we inspect the card's value and find that it begins with an 'A' then we know it is an ace.
 - [x] if it is an ace, we need to inspect the current total of the player's hand (maybe we already pass that in during the deal) and if the ace(11) will make the player bust, then we re-assign the value of that ace to 1. (needs testing to ensure re-assignment will work since we later pass the value back when we delete it from the original deck)
+## Refactor output for displaying cards with better readability
