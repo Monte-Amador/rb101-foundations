@@ -149,32 +149,27 @@ _Upon first looks with fresh eyes it also looks like I can make use of the joine
 
 
 
-## ::LEFT-OFF:: Refactor Deal Method
-# line 73 deal method refactor notes The complexity to this method is that is
-# handling string output from a collection of variables that are used to append
-# to the user's hand. In some cases we need to hide one of the cards for the
-# dealer, in other case we need to reassign the value for the aces (1 or 11).
-# the string output is handled differently so that it can display the card and
-# suit as it is dealed but not the value, yet all values need to be correctly
-# appended to the user's hand so that the correct calculations can be made for
-# comparison operations.  
+## Refactor Deal Method
+Select a card from the deck of cards which holds it's suit and value and append to the user's hand.
 
-1. Create variables for method processes that assembled return an array holding the new_card data and append to the user's hand array. 
+Outlined below is the current state of the deal method broken down into 7 separate functions that can be abstracted into their own methods. The method as a whole works on collecting hash values and creates a temporary container (local to method array) to hold the information that can be later organized and passed to the user's hand of cards which permanently alters the user's hand.
 
-2. sub_hash selected from deck of cards containing all keys that contain an available array for use uses the return value from the above sub-array to assign a 'cards' variable which its value is a key from the available arrays.  
+1. Assign variables to hash values and method processes that assembled together return an array holding the `new_card` data and append to the `user_hand` array. 
 
-3. all variables are prepared for string output and updating the user's hash[:cards]
-# with the correct values.  we also pass the option * hide parameter so that we
-# can manually add this option to the opening deal for the dealer. This way we
-# can 'hide' the first card of the dealer. (this definitely can be done
-# better).  
+2. Select valid cards based on their `array.size values > 0`. This ensures that the arrays are not empty and are therefore a valid option to choose a card from.
 
-4. inpsect the card to see if the card is 10 and if it is, display the
-# first two items of the string, otherwise only return the first item of the
-# string capitalized.  Assign the suit of the card after the card's title.
-# append to a temporary array for holding purposes test if any values are an
-# ace and if so, modify the temp array if the hide parameter is empty output
-# the user's new card.
+3. Inspect the card variable to find out if the return value has a necessary two index integer (i.e. `:'10' => card[0] + card[1]`) or not. Return value defaults to `card[0]` otherwise.
+
+4. Append all variables into `new_card` array based on order (card, suit, value). 
+
+5. Append card and suit variables to string output for display purposes when showing the card that is dealt (without value). 
+
+6. If the optional parameter `hide` is an empty array (nothing has been passed into it) then display the individual card upon deal without value attached to the string output.
+
+7. return `new_card` array to `user_hand` array. This return will permanently
+modify the `user_hand` array.
+
 
 ## Refactor output for displaying cards with better readability
 # need to make better separation between user turns and dealer turns so that it's visually more clear what is happening. Look at bringing in the prompt method.
+# create heredoc for all visual separation elements like code blocks to inform the user what is happening.

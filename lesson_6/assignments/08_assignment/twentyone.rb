@@ -70,27 +70,34 @@ def initial_deal(hsh, player, dealer)
   end
 end
 
+def select_valid_cards(hsh)
+  hsh.select { |key, hsh| hsh.size > 0 }
+end
+
+def inspect_card(key)
+  if key == :'10'
+    (key[0] + key[1])
+  else
+    key.to_s.capitalize[0]
+  end
+end
+
 def deal(hsh, user, *hide)
   new_card = []
   user_hand = hsh[user][:cards]
   deck = hsh[:deck]
   suit = deck.keys.sample
-  valid_cards = deck[suit][:cards].select { |key, hsh| hsh.size > 0 } 
-  card = valid_cards.keys.sample
-  value = deck[suit][:cards][card].sample
-
-  if card == :'10'
-    card_output = (card[0] + card[1])
-  else
-    card_output = card.to_s.capitalize[0]
-  end
-
+  cards = deck[suit][:cards]
+  single_card = select_valid_cards(cards).keys.sample
+  value = cards[single_card].sample
+  
+  card_display = inspect_card(single_card)
   suit_output = suit.to_s.capitalize[0]
-  new_card << "#{card_output}"
+  new_card << "#{card_display}"
   new_card << "#{suit_output}"
-  new_card_output = "#{card_output}#{suit_output}"
-  new_card << deck[suit][:cards][card].delete(value)
-  if is_ace?(card_output) && will_user_bust?(hsh, user)
+  new_card_output = "#{card_display}#{suit_output}"
+  new_card << deck[suit][:cards][single_card].delete(value)
+  if is_ace?(card_display) && will_user_bust?(hsh, user)
     modify_ace_value!(new_card)
   end
   if hide == []
