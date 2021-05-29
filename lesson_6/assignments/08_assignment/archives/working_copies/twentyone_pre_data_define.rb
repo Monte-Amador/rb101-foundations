@@ -8,53 +8,33 @@ def initialize_twenty_one
     player: { cards: [], score: '' },
     deck: { 
       hearts: {
-        cards: {
-        '2': [2], 
-        '3': [3], 
-        '4': [4], 
-        '5': [5], 
-        '6': [6], 
-        '7': [7], 
-        '8': [8], 
-        '9': [9], 
-        '10': [10], jack: [10], queen: [10], king: [10], ace: [11] }
+        face_values: [2, 3, 4, 5, 6, 7, 8, 9, 10],
+        jack: [10], 
+        queen: [10], 
+        king: [10], 
+        ace: [11]
       },
       diamonds: {
-        cards: {
-        '2': [2], 
-        '3': [3], 
-        '4': [4], 
-        '5': [5], 
-        '6': [6], 
-        '7': [7], 
-        '8': [8], 
-        '9': [9], 
-        '10': [10], jack: [10], queen: [10], king: [10], ace: [11] }
+        face_values: [2, 3, 4, 5, 6, 7, 8, 9, 10],
+        jack: [10], 
+        queen: [10], 
+        king: [10], 
+        ace: [11]
       },
       clubs: {
-        cards: {
-        '2': [2], 
-        '3': [3], 
-        '4': [4], 
-        '5': [5], 
-        '6': [6], 
-        '7': [7], 
-        '8': [8], 
-        '9': [9], 
-        '10': [10], jack: [10], queen: [10], king: [10], ace: [11] }
+        face_values: [2, 3, 4, 5, 6, 7, 8, 9, 10],
+        jack: [10], 
+        queen: [10], 
+        king: [10], 
+        ace: [11]
       },
       spades: {
-        cards: {
-        '2': [2], 
-        '3': [3], 
-        '4': [4], 
-        '5': [5], 
-        '6': [6], 
-        '7': [7], 
-        '8': [8], 
-        '9': [9], 
-        '10': [10], jack: [10], queen: [10], king: [10], ace: [11] }
-      }
+        face_values: [2, 3, 4, 5, 6, 7, 8, 9, 10],
+        jack: [10], 
+        queen: [10], 
+        king: [10], 
+        ace: [11]
+      },
     }
   }
 end
@@ -75,26 +55,20 @@ def deal(hsh, user, *hide)
   user_hand = hsh[user][:cards]
   deck = hsh[:deck]
   suit = deck.keys.sample
-  valid_cards = deck[suit][:cards].select { |key, hsh| hsh.size > 0 } 
+  valid_cards = deck[suit].select { |key, arr| arr.size > 0 }
+  #return false if !valid_cards # refactor error here?
   card = valid_cards.keys.sample
-  value = deck[suit][:cards][card].sample
-
-  if card == :'10'
-    card_output = (card[0] + card[1])
-  else
-    card_output = card.to_s.capitalize[0]
-  end
-
+  value = deck[suit][card].sample
+  card_output = card.to_s.capitalize[0]
   suit_output = suit.to_s.capitalize[0]
   new_card << "#{card_output}"
   new_card << "#{suit_output}"
-  new_card_output = "#{card_output}#{suit_output}"
-  new_card << deck[suit][:cards][card].delete(value)
+  new_card << deck[suit][card].delete(value)
   if is_ace?(card_output) && will_user_bust?(hsh, user)
     modify_ace_value!(new_card)
   end
   if hide == []
-  puts "#{user}'s new card: #{new_card_output}"
+  puts "#{user}'s new card: #{new_card.join}"
   sleep(1)
   end
   user_hand << new_card

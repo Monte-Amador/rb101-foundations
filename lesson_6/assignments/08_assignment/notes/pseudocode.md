@@ -48,7 +48,6 @@ We can also run the `Array#sample` method on the specified :deck hashes and thei
 - [x] DEALER TURN: decides to hit or stay after player stays
   - [x] dealer must hit until 17 >= total
 - [x] not necessarily a bug, but whoever busts wins due to the fact that their total number of cards is higher. need to add additional logic to first test if player busted or won with 21 to begin with.
-  - [ ] wire up the detect_winner and bust? methods after every deal. If user won (21) or busted (> 21) exit the hand and declare winner. With a two player game we don't need any further dealing to other players.
 
 ## Aces Method
 first need to think about the aces array as it currently stands, since there is only one ace for each suit it doesn't make sense to have two values inside of the ace to specify 1, 11. 
@@ -79,20 +78,34 @@ what happens when the initial deal deals a player 21? The game isn't over yet, t
 - [x] dealer hits or stays
 - [x] compare cards and exit hand
 
+## Data organization
+currently, we get a list of valid cards by returning an array of all suits keys that haave a size greater than 0 inside the deck of cards hash. 
+
+deck=>suit=>cards[1, 2]
+
 ## Hide Dealer first card
 1. first card displays as "|X|" or hide completely
+
 2. must not show total for dealer
+
 3. when dealer's turn, re-display dealer's hand to show all cards and total
+
 4. find a way to also display player's cards for comparison (user interface enhancement)
+
 5. Dealer's hand: |X| card
+
 6. Player's Hand: AC(11), FS(7) >>> Total: 12
+
 7. would you like to hit or stay?
+
 8. input
+
 9. clear screen
+
 10. show single card
+
 11. reload total hand display (repeat)
-12. REFACTOR: one edge case is that if the computer has an ace as the first card and it is therefore hidden, and the dealer receives another ace, the value shows up as 1 for the second ace. Need to alter the second aces string to be something like(1 or 11).the point of approach to this problem may lie within the is_ace? method where it specifically targets arr[2] = 1. Perhaps we have the condition during the display_dealer_cards method that basically states the 1 or 11 for all aces (without modifying the actual hand, just the output)? That way when the display_cards method calls on the dealer's cards we have the correct values associated.
-13. ::LEFT-OFF:: got the logic in place during the display_dealear_cards method but can't seem to target the specific index. Pick up here and test the output of the display array (looks like the array will need a regex? ["|X|", "AH(11)"]
+
 
 ## Coding up the player turn
 - ideal to have one generic method that iterates from the player to the dealer.
@@ -133,4 +146,35 @@ _Upon first looks with fresh eyes it also looks like I can make use of the joine
 
 - [x] if we inspect the card's value and find that it begins with an 'A' then we know it is an ace.
 - [x] if it is an ace, we need to inspect the current total of the player's hand (maybe we already pass that in during the deal) and if the ace(11) will make the player bust, then we re-assign the value of that ace to 1. (needs testing to ensure re-assignment will work since we later pass the value back when we delete it from the original deck)
+
+
+
+## ::LEFT-OFF:: Refactor Deal Method
+# line 73 deal method refactor notes The complexity to this method is that is
+# handling string output from a collection of variables that are used to append
+# to the user's hand. In some cases we need to hide one of the cards for the
+# dealer, in other case we need to reassign the value for the aces (1 or 11).
+# the string output is handled differently so that it can display the card and
+# suit as it is dealed but not the value, yet all values need to be correctly
+# appended to the user's hand so that the correct calculations can be made for
+# comparison operations.  
+
+1. Create variables for method processes that assembled return an array holding the new_card data and append to the user's hand array. 
+
+2. sub_hash selected from deck of cards containing all keys that contain an available array for use uses the return value from the above sub-array to assign a 'cards' variable which its value is a key from the available arrays.  
+
+3. all variables are prepared for string output and updating the user's hash[:cards]
+# with the correct values.  we also pass the option * hide parameter so that we
+# can manually add this option to the opening deal for the dealer. This way we
+# can 'hide' the first card of the dealer. (this definitely can be done
+# better).  
+
+4. inpsect the card to see if the card is 10 and if it is, display the
+# first two items of the string, otherwise only return the first item of the
+# string capitalized.  Assign the suit of the card after the card's title.
+# append to a temporary array for holding purposes test if any values are an
+# ace and if so, modify the temp array if the hide parameter is empty output
+# the user's new card.
+
 ## Refactor output for displaying cards with better readability
+# need to make better separation between user turns and dealer turns so that it's visually more clear what is happening. Look at bringing in the prompt method.
