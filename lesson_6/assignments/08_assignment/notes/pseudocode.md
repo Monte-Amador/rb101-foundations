@@ -154,22 +154,33 @@ Select a card from the deck of cards which holds it's suit and value and append 
 
 Outlined below is the current state of the deal method broken down into 7 separate functions that can be abstracted into their own methods. The method as a whole works on collecting hash values and creates a temporary container (local to method array) to hold the information that can be later organized and passed to the user's hand of cards which permanently alters the user's hand.
 
-1. Assign variables to hash values and method processes that assembled together return an array holding the `new_card` data and append to the `user_hand` array. 
+- [x] 1. Assign variables to hash values and method processes that assembled together return an array holding the `new_card` data and append to the `user_hand` array. 
 
-2. Select valid cards based on their `array.size values > 0`. This ensures that the arrays are not empty and are therefore a valid option to choose a card from.
+- [x] 2. Select valid cards based on their `array.size values > 0`. This ensures that the arrays are not empty and are therefore a valid option to choose a card from.
 
-3. Inspect the card variable to find out if the return value has a necessary two index integer (i.e. `:'10' => card[0] + card[1]`) or not. Return value defaults to `card[0]` otherwise.
+- [x] 3. Inspect the card variable to find out if the return value has a necessary two index integer (i.e. `:'10' => card[0] + card[1]`) or not. Return value defaults to `card[0]` otherwise.
 
-4. Append all variables into `new_card` array based on order (card, suit, value). 
+- [x] 4. Append all variables into `new_card` array based on order (card, suit, value). 
 
-5. Append card and suit variables to string output for display purposes when showing the card that is dealt (without value). 
+- [x] 5. Append card and suit variables to string output for display purposes when showing the card that is dealt (without value). 
 
-6. If the optional parameter `hide` is an empty array (nothing has been passed into it) then display the individual card upon deal without value attached to the string output.
+- [x] 6. If the optional parameter `hide` is an empty array (nothing has been passed into it) then display the individual card upon deal without value attached to the string output.
 
-7. return `new_card` array to `user_hand` array. This return will permanently
+- [x] 7. return `new_card` array to `user_hand` array. This return will permanently
 modify the `user_hand` array.
 
+- [x] test if card_display is an ace and if user will bust with 11. if so, modify ace value's.
+
+- [x] refactor the display_single_card parameter to take the new_card as an argument. Note that the new_card object is a nested array like: [["3", "H", 3]]
+
+- [x] BUG: Aces are working, with the exception that the ace is assigned as an 11 from the deal like it should, it keeps that value through the next hit. So for example, the hand is an ace, 2, and 10 => 13. but instead it counts the initial ace as 11 instead of changing it to a 1.
+  - [x] perhaps when totaling the hand to see if a player busts, we take into account if they have a card with a value of 11 (an ace). if with the 11 they bust, reassign the 11 to a 1 and re-total.
 
 ## Refactor output for displaying cards with better readability
-# need to make better separation between user turns and dealer turns so that it's visually more clear what is happening. Look at bringing in the prompt method.
-# create heredoc for all visual separation elements like code blocks to inform the user what is happening.
+
+- [ ] need to make better separation between user turns and dealer turns so that it's visually more clear what is happening. Look at bringing in the prompt method.
+
+- [ ] create heredoc for all visual separation elements like code blocks to inform the user what is happening.
+
+- [ ] Create main loop to keep score and only show the welcome message once. 
+- [ ] clear out puts in place of prompts
