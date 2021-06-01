@@ -1,17 +1,11 @@
 - [x] bug: choosing anything allows the game to continue.
-
 - [x] clear screen at beginning 
-
 - [x] remove continuous deck and allow for the reshuffle after every iteration of hand.
-
 - [x] BUG: I'm electing to leave the bug for the higher ranking cards as a preference due to the fact the game is logistically working. I want to focus for now on the non-bug priorities starting with the auto win at 21 from the deal like the bust? actions the end of that particular deal (dealer or palyer). Then move through the refactoring and testing to see if any other bugs show up.
-
 - [x] if player receives 21 at the initial deal, it still asks if the player wants to hit or stay - display 21 message if player gets 21 from deal and go to winner
-
 - [x] have the dealer's new card show up like the player's new card so that we see the card first before updating the hand.
-
 - [x] aces are simply choosing between 1 of the two values in the array. Perhaps all values for aces are 11 but the method can change the value to 1 if the total would equate to a bust with 11. 
-- [ ] display should be in this order:
+- [x] display should be in this order:
   - [x] clear screen
   - [x] display all visible cards for both dealer and player
   - [x] if player stays, we see their cards again but that should be removed as the top of the screen still shows the current hand.
@@ -22,9 +16,13 @@
 - [x] would be nice to only dispaly face cards in current format [JD(10)] and display face values with their value and suit [2H(2)]
 - [x] Need a way to hide first card from dealer
 - [x] make sure we can always see the cards like the ttt board
-
 - [x] BUG: once the dealer's turn begins the screen gets cleared and updates the current hand with the new card
-- [x] BUG: because of the way the hash pulls it's sampled data, it looks like there's a preference for face cards, but there isn't a preference per se, it's that there's a sample of the available keys choosing to pick a card within a suit. Because there are 5 possible types of cards there is a 1 in 5 chance that the had will include a face value. So that's why it continues to return higher face cards more than face_value cards.
+- [x] BUG: because of the way the hash pulls it's sampled data, it looks like
+  there's a preference for face cards, but there isn't a preference per se,
+it's that there's a sample of the available keys choosing to pick a card within
+a suit. Because there are 5 possible types of cards there is a 1 in 5 chance
+that the had will include a face value. So that's why it continues to return
+higher face cards more than face_value cards.
 
 ## Refactor Deal Method Select a card from the deck of cards which holds it's
 suit and value and append to the user's hand.  Outlined below is the current
@@ -74,6 +72,14 @@ prompt method.
 - [ ] create heredoc for all visual separation elements like code blocks to
   inform the user what is happening.
 
-- [ ] Create main loop to keep score and only show the welcome message once. 
-- [ ] clear out puts in place of prompts
-- [ ] if player busts, dealer's hand shouldn't be shown 
+- [x] Create main loop to keep score and only show the welcome message once. 
+- [x] clear out puts in place of prompts
+- [x] if player busts, dealer's hand shouldn't be shown 
+- [x] More separation for Match Score, think of putting that into the same header display. In fact, perhaps we pass an argument like the prompt works into the header display. That would alleviate the need for manually customizing the header everytime and create some consistency too.
+- [ ] Add closing message
+- [ ] Add basic rules?
+- [x] BUG: if dealer busts, all cards should be displayed with total
+- [x] BUG: display_banner method seems to be returning an extra line
+- [x]  Cleaned up display by adding display_banner method that takes the input and creates a visual block to inform user what is happening.
+- [ ] change last message verification to exit game entirely
+- [ ] input validation
