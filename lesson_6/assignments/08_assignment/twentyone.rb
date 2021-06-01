@@ -124,6 +124,15 @@ end
 # 3. output
 ###########################################
 
+def display_error
+  error <<~MSG
+  Sorry, please check
+  your input to verify it
+  is correct.
+  MSG
+  prompt error
+end
+
 def display_banner(msg, *spacer)
   banner = <<~MSG
   #########################################
@@ -212,6 +221,42 @@ end
 ###########################################
 # 4. inspect/modify
 ###########################################
+def validate_integer_input(int)
+  if int.include?('.')
+    return false
+  end
+  int.to_i if int.to_i.to_s == int
+end
+
+def integer_in_range(str, range)
+  return nil if !validate_integer_input(str)
+  int = str.to_i
+  case range.size
+  when 2
+    return int if int.between?(range[0], range[1])
+  when 1
+    return int if range.join.to_i == int
+  else
+    display_error
+  end
+end
+
+def string_in_range(str, range)
+  test_string = range.join(' ').split
+  string = str.strip.downcase
+  string if test_string.include?(string)
+end
+
+def val_user_input(str, data_arr, type)
+  case type.downcase
+  when 'integer'
+    integer_in_range(str, data_arr)
+  when 'string'
+    string_in_range(str, data_arr)
+  else
+    display_error
+  end
+end
 
 def match_winner?(hsh)
   hsh.has_value?(5)
@@ -329,15 +374,19 @@ end
 def ask_hit_stay
   prompt "Would you like to (h)it or (s)tay?"
   reply = gets.chomp.downcase
+  string_input = val_user_input(reply, %w(h s H S), 'string')
 end
 
 def hit(hsh, user)
+  if user == :dealer
+    sleep(2)
+  end
   deal(hsh, user)
   sleep(1)
   clear_screen
   if twentyone?(hsh, user)
     prompt "#{user.to_s.capitalize} got 21!" 
-    sleep(1)
+    sleep(2)
   end
 end
 
@@ -371,11 +420,7 @@ def dealer_turn(hsh, user)
     display_banner(user_turn(user))
     display_all_cards(hsh)
     break if hold_on_seventeen?(hsh, user) 
-    #sleep(2)
     hit(hsh, user)
-    #deal(hsh, user)
-    #sleep(2)
-    #clear_screen
     break if bust?(hsh, user) || twentyone?(hsh, user)
   end
 end
@@ -427,7 +472,8 @@ loop do
     display_visual_spacer
     display_banner(display_score(score))
     if match_winner?(score)
-      return prompt display_match_summary(score)
+      prompt display_match_summary(score)
+      return closing_message
     end
     display_visual_spacer
     prompt "shuffle and deal again?(y/n)"
