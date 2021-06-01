@@ -83,7 +83,7 @@ def initial_deal(hsh, player, dealer)
   loop do
     deal(hsh, player, 'hide')
     if twentyone?(hsh, player)
-      puts "#{player.to_s.capitalize} got 21!" 
+      prompt "#{player.to_s.capitalize} got 21!" 
       sleep(1)
     end
     deal(hsh, dealer, 'hide')
@@ -137,8 +137,8 @@ def display_game_summary
 end
 
 def display_initial_hands(hsh)
-  puts "Dealer's Hand: #{display_dealer_cards(hsh, :dealer)}"
-  puts "Player's Hand: #{display_user_cards(hsh, :player)}"
+  prompt "Dealer's Hand: #{display_dealer_cards(hsh, :dealer)}"
+  prompt "Player's Hand: #{display_user_cards(hsh, :player)}"
 end
 
 def display_dealer_cards(hsh, user)
@@ -176,8 +176,8 @@ def display_user_cards(hsh, user)
 end
 
 def display_all_cards(hsh)
-  puts "Dealer's Hand: #{display_user_cards(hsh, :dealer)}"
-  puts "Player's Hand: #{display_user_cards(hsh, :player)}"
+  prompt "Dealer's Hand: #{display_user_cards(hsh, :dealer)}"
+  prompt "Player's Hand: #{display_user_cards(hsh, :player)}"
 end
 
 def display_single_card(user, arr)
@@ -185,15 +185,14 @@ def display_single_card(user, arr)
   #{user.capitalize}'s New Card:
   #{arr[0].capitalize + arr[1].capitalize}
   MSG
-  puts card
+  prompt card
 end
 
 def ask_play_again
   question = <<~MSG
-  
   play again?
   MSG
-  puts question
+  prompt question
   answer = gets.chomp
 end
 
@@ -268,13 +267,14 @@ def twentyone?(hsh, user)
   total.sum == 21
 end
 
-def display_bust(arr)
+def display_bust(arr, score)
   user1 = arr[0].to_s.capitalize
   user2 = arr[1].to_s.capitalize
   message = <<~MSG
   #{user1} busts!
   #{user2} wins!
   MSG
+  score[arr[1]] += 1
   prompt message
 end
 
@@ -288,25 +288,21 @@ def someone_busted(hsh)
   end
 end
 
-def compare_hands(hsh, player, dealer)
+def compare_hands(hsh, player, dealer, score)
   player_total = []
   dealer_total = []
   hsh[player][:cards].select { |item| player_total << item[2] }
   hsh[dealer][:cards].select { |item| dealer_total << item[2] }
   if player_total.sum > dealer_total.sum 
-    puts "#{player.to_s.capitalize} wins hand!"
-    player
+    prompt "#{player.to_s.capitalize} wins hand!"
+    score[player] += 1
   elsif dealer_total.sum > player_total.sum
-    puts "#{dealer.to_s.capitalize} wins hand!"
-    dealer
+    prompt "#{dealer.to_s.capitalize} wins hand!"
+    score[dealer] += 1 
   else
-    puts "Push!"
+    prompt "Push!"
   end
 end
-
-#def someone_won?(hsh, player, computer)
-#  !!compare_hands(hsh, player, computer)
-#end
 
 ###########################################
 # iterations
@@ -317,7 +313,7 @@ def player_turn(hsh, user)
     break if bust?(hsh, user) || twentyone?(hsh, user)
     display_user_turn(user)
     display_initial_hands(hsh)
-    puts "Would you like to (h)it or (s)tay?"
+    prompt "Would you like to (h)it or (s)tay?"
     reply = gets.chomp
     clear_screen
     if reply == 'h'
@@ -325,15 +321,15 @@ def player_turn(hsh, user)
       sleep(1)
       clear_screen
       if twentyone?(hsh, user)
-        puts "#{user.to_s.capitalize} got 21!" 
+        prompt "#{user.to_s.capitalize} got 21!" 
         sleep(1)
       end
     elsif reply == 's'
-      puts "Player chooses to stay!"
+      prompt "Player chooses to stay!"
       sleep(1)
       clear_screen
     else
-      puts "Sorry, valid inputs are 'h, or s'"
+      prompt "Sorry, valid inputs are 'h, or s'"
     end
     break if reply == 's'
   end
@@ -346,6 +342,7 @@ def dealer_turn(hsh, user)
     display_user_turn(user)
     display_all_cards(hsh)
     break if hold_on_seventeen?(hsh, user) 
+    sleep(2)
     deal(hsh, user)
     sleep(2)
     clear_screen
@@ -358,22 +355,40 @@ def welcome_message
   message = <<~MSG
   Welcome to 21!
   The goal is to get to 21 without going over.
-  If neither player reaches 21, highest card wins.
-  Each user get's a turn and can continue to receive cards 
-  until they elect to stay or bust.
-  
+  First player to win 5 hands wins the match!
+ 
   >>> Dealer must stay on 17 or higher <<<
   press return to continue.
   MSG
-  prompt message
+  puts message
   keypress = gets.chomp
 end
+
+def initialize_score
+  hsh = { 
+    player: 0,
+    dealer: 0 }
+end
+
+def match_winner?(hsh)
+  hsh.has_value?(5)
+end
+
+def display_match_summary(hsh)
+  if hsh[:player] == 5
+    "Player wins match!"
+  else
+    "Dealer wins match!"
+  end
+end
+
 ###########################################
 # game logic
 ###########################################
 
 loop do
   welcome_message
+  score = initialize_score
   loop do 
     round = initialize_twenty_one
     initial_deal(round, :player, :dealer)
@@ -383,13 +398,18 @@ loop do
     clear_screen
     display_game_summary
     if someone_busted(round)
-      display_all_cards(round)
-      display_bust(someone_busted(round))
+      display_initial_hands(round)
+      display_bust(someone_busted(round), score)
     else
       display_all_cards(round)
-      compare_hands(round, :player, :dealer)
+      compare_hands(round, :player, :dealer, score)
     end
-    break if ask_play_again == 'n'
+    if match_winner?(score)
+      return prompt display_match_summary(score)
+    end
+    prompt "shuffle and deal again?(y/n)"
+    answer = gets.chomp
+    break unless answer == 'y'
   end
     break if ask_play_again == 'n'
 end
