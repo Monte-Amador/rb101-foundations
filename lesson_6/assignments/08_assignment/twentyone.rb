@@ -202,7 +202,7 @@ def exit_game
   exit game?
   MSG
   prompt question
-  answer = gets.chomp
+  answer = gets.chomp.downcase
 end
 
 def closing_message
@@ -313,15 +313,12 @@ def compare_hands(hsh, player, dealer, score)
   hsh[dealer][:cards].select { |item| dealer_total << item[2] }
   if player_total.sum > dealer_total.sum 
     display_banner "#{player.to_s.capitalize} wins hand!"
-    #prompt "#{player.to_s.capitalize} wins hand!"
     score[player] += 1
   elsif dealer_total.sum > player_total.sum
     display_banner "#{dealer.to_s.capitalize} wins hand!"
-    #prompt "#{dealer.to_s.capitalize} wins hand!"
     score[dealer] += 1 
   else
     display_banner "Push!"
-    #prompt "Push!"
   end
 end
 
@@ -329,30 +326,41 @@ end
 # 5. iterations
 ###########################################
 
+def ask_hit_stay
+  prompt "Would you like to (h)it or (s)tay?"
+  reply = gets.chomp.downcase
+end
+
+def hit(hsh, user)
+  deal(hsh, user)
+  sleep(1)
+  clear_screen
+  if twentyone?(hsh, user)
+    prompt "#{user.to_s.capitalize} got 21!" 
+    sleep(1)
+  end
+end
+
+def stay
+  prompt "Player chooses to stay!"
+  sleep(1)
+  clear_screen
+end
+
 def player_turn(hsh, user)
   loop do
     break if bust?(hsh, user) || twentyone?(hsh, user)
     display_banner(user_turn(user))
     display_initial_hands(hsh)
-    prompt "Would you like to (h)it or (s)tay?"
-    reply = gets.chomp
+    action = ask_hit_stay
     clear_screen
-    if reply == 'h'
-      deal(hsh, user)
-      sleep(1)
-      clear_screen
-      if twentyone?(hsh, user)
-        prompt "#{user.to_s.capitalize} got 21!" 
-        sleep(1)
-      end
-    elsif reply == 's'
-      prompt "Player chooses to stay!"
-      sleep(1)
-      clear_screen
+    if action == 'h'
+      hit(hsh, user)
+    elsif action == 's'
+      return stay
     else
       prompt "Sorry, valid inputs are 'h, or s'"
     end
-    break if reply == 's'
   end
 end
 
@@ -409,14 +417,12 @@ loop do
     player_turn(round, :player)
     dealer_turn(round, :dealer)
     clear_screen
-
     if someone_busted(round)
       display_bust(someone_busted(round), score, round)
     else
       compare_hands(round, :player, :dealer, score)
       display_all_cards(round)
     end
-    
     display_visual_spacer
     display_banner(display_score(score))
     if match_winner?(score)

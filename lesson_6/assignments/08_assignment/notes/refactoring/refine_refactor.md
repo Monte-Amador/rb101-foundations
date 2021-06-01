@@ -65,21 +65,45 @@ they bust, reassign the 11 to a 1 and re-total.
 
 ## Refactor output for displaying cards with better readability
 
-- [ ] need to make better separation between user turns and dealer turns so
+- [x] need to make better separation between user turns and dealer turns so
   that it's visually more clear what is happening. Look at bringing in the
 prompt method.
-
-- [ ] create heredoc for all visual separation elements like code blocks to
+- [x] create heredoc for all visual separation elements like code blocks to
   inform the user what is happening.
-
 - [x] Create main loop to keep score and only show the welcome message once. 
 - [x] clear out puts in place of prompts
 - [x] if player busts, dealer's hand shouldn't be shown 
 - [x] More separation for Match Score, think of putting that into the same header display. In fact, perhaps we pass an argument like the prompt works into the header display. That would alleviate the need for manually customizing the header everytime and create some consistency too.
-- [ ] Add closing message
+- [x] Add closing message
 - [ ] Add basic rules?
 - [x] BUG: if dealer busts, all cards should be displayed with total
 - [x] BUG: display_banner method seems to be returning an extra line
 - [x]  Cleaned up display by adding display_banner method that takes the input and creates a visual block to inform user what is happening.
-- [ ] change last message verification to exit game entirely
+- [x] change last message verification to exit game entirely
 - [ ] input validation
+
+There's a better way to work out this bust method. 
+
+will_user_bust?
+bust?
+someone_busted
+display_bust
+
+1. player_turn breaks if user busts and dealer automatically wins
+2. dealer_turn breaks if player busted (to skip turn and go straight to someone_busted method).
+3. someone_busted method tests if either player or dealer busted and returns an array 
+4. display_bust method outputs input array from someone_busted method.
+  
+- test every hit to see if user goes over 21
+- if a user busts, exit to display message and grant win
+  - display all user's cards unless player busts and don't show dealer's hidden card
+- display who busted and grant win to other
+
+if a user busts, we should exit straight to display_bust method and skip all other iterations. By way of passing the user to the display_bust, we can then test which user was passed and display accordingly and update the score.
+
+
+##################################################
+1. user's turn >> hit
+2. if user busts append user symbol to empty array
+3. return who busted in array if array is not empty.
+4. end hand and display who busted and who won.
