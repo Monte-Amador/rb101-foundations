@@ -371,10 +371,11 @@ def dealer_turn(hsh, user)
     display_banner(user_turn(user))
     display_all_cards(hsh)
     break if hold_on_seventeen?(hsh, user) 
-    sleep(2)
-    deal(hsh, user)
-    sleep(2)
-    clear_screen
+    #sleep(2)
+    hit(hsh, user)
+    #deal(hsh, user)
+    #sleep(2)
+    #clear_screen
     break if bust?(hsh, user) || twentyone?(hsh, user)
   end
 end
