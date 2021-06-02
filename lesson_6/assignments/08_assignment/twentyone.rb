@@ -9,88 +9,83 @@ def clear_screen
   system('clear') || system('cls')
 end
 
-#def reset_local_var(variable, *vars)
-#  variable.clear
-#  if vars
-#    vars.each(&:clear)
-#  end
-#end
-
 ###########################################
 # 2. initialize
 ###########################################
 
 def initialize_score
-  hsh = { 
-    player: 0,
-    dealer: 0 }
+  { player: 0, dealer: 0 }
 end
 
+# rubocop:disable Metrics/MethodLength
 def initialize_twenty_one
-  twenty_one = {
-    dealer: { cards: [], score: '' },
+  { dealer: { cards: [], score: '' },
     player: { cards: [], score: '' },
-    deck: { 
+    deck: {
       hearts: {
         cards: {
-        '2': [2], 
-        '3': [3], 
-        '4': [4], 
-        '5': [5], 
-        '6': [6], 
-        '7': [7], 
-        '8': [8], 
-        '9': [9], 
-        '10': [10], jack: [10], queen: [10], king: [10], ace: [11] }
+          '2': [2],
+          '3': [3],
+          '4': [4],
+          '5': [5],
+          '6': [6],
+          '7': [7],
+          '8': [8],
+          '9': [9],
+          '10': [10], jack: [10], queen: [10], king: [10], ace: [11]
+        }
       },
       diamonds: {
         cards: {
-        '2': [2], 
-        '3': [3], 
-        '4': [4], 
-        '5': [5], 
-        '6': [6], 
-        '7': [7], 
-        '8': [8], 
-        '9': [9], 
-        '10': [10], jack: [10], queen: [10], king: [10], ace: [11] }
+          '2': [2],
+          '3': [3],
+          '4': [4],
+          '5': [5],
+          '6': [6],
+          '7': [7],
+          '8': [8],
+          '9': [9],
+          '10': [10], jack: [10], queen: [10], king: [10], ace: [11]
+        }
       },
       clubs: {
         cards: {
-        '2': [2], 
-        '3': [3], 
-        '4': [4], 
-        '5': [5], 
-        '6': [6], 
-        '7': [7], 
-        '8': [8], 
-        '9': [9], 
-        '10': [10], jack: [10], queen: [10], king: [10], ace: [11] }
+          '2': [2],
+          '3': [3],
+          '4': [4],
+          '5': [5],
+          '6': [6],
+          '7': [7],
+          '8': [8],
+          '9': [9],
+          '10': [10], jack: [10], queen: [10], king: [10], ace: [11]
+        }
       },
       spades: {
         cards: {
-        '2': [2], 
-        '3': [3], 
-        '4': [4], 
-        '5': [5], 
-        '6': [6], 
-        '7': [7], 
-        '8': [8], 
-        '9': [9], 
-        '10': [10], jack: [10], queen: [10], king: [10], ace: [11] }
+          '2': [2],
+          '3': [3],
+          '4': [4],
+          '5': [5],
+          '6': [6],
+          '7': [7],
+          '8': [8],
+          '9': [9],
+          '10': [10], jack: [10], queen: [10], king: [10], ace: [11]
+        }
       }
-    }
-  }
+    } }
 end
+# rubocop:enable Metrics/MethodLength
 
 def initial_deal(hsh, player, dealer)
   hsh[player][:cards] = []
   hsh[dealer][:cards] = []
   loop do
-    deal(hsh, player, 'hidden')
+    deal(hsh, player) 
     if twentyone?(hsh, player)
       prompt "#{player.to_s.capitalize} got 21!" 
-      sleep(1)
+      sleep(2)
     end
     deal(hsh, dealer, 'hidden')
     break if hsh[player][:cards].size && hsh[dealer][:cards].size == 2
@@ -115,7 +110,7 @@ def deal(hsh, user, *hidden)
   end
   if hidden == []
     display_single_card(user, new_card)
-    sleep(1)
+    sleep(2)
   end
   user_hand << new_card
 end
@@ -456,6 +451,17 @@ def welcome_message
   keypress = gets.chomp
 end
 
+def continue
+  message = <<~MSG
+  press return 
+  when ready to continue
+  MSG
+  prompt message 
+  keypress = gets.chomp
+  clear_screen
+  sleep(1)
+end
+
 def display_score(hsh)
   "21 Match Score:
   Dealer: #{hsh[:dealer]}
@@ -488,13 +494,15 @@ loop do
     inspect_hands(round, :player, :dealer, score)
     display_visual_spacer
     display_banner(display_score(score))
+    continue
     if match_winner?(score)
       prompt display_match_summary(score)
       return closing_message
     end
     display_visual_spacer
-    break if ask_another_hand == 'n'
+    #break if ask_another_hand == 'n'
   end
-    break if exit_game == 'y'
+    break if ask_another_hand == 'n'
+    #break if exit_game == 'y'
 end
 closing_message

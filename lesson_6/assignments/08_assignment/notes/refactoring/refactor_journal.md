@@ -64,7 +64,6 @@ initial ace as 11 instead of changing it to a 1.
 they bust, reassign the 11 to a 1 and re-total.
 
 ## Refactor output for displaying cards with better readability
-
 - [x] need to make better separation between user turns and dealer turns so
   that it's visually more clear what is happening. Look at bringing in the
 prompt method.
@@ -75,10 +74,9 @@ prompt method.
 - [x] if player busts, dealer's hand shouldn't be shown 
 - [x] More separation for Match Score, think of putting that into the same header display. In fact, perhaps we pass an argument like the prompt works into the header display. That would alleviate the need for manually customizing the header everytime and create some consistency too.
 - [x] Add closing message
-- [ ] Add basic rules?
 - [x] BUG: if dealer busts, all cards should be displayed with total
 - [x] BUG: display_banner method seems to be returning an extra line
 - [x]  Cleaned up display by adding display_banner method that takes the input and creates a visual block to inform user what is happening.
 - [x] change last message verification to exit game entirely
-- [ ] input validation
+- [x] input validation
 
