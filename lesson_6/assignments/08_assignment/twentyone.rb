@@ -9,12 +9,12 @@ def clear_screen
   system('clear') || system('cls')
 end
 
-def reset_local_var(variable, *vars)
-  variable.clear
-  if vars
-    vars.each(&:clear)
-  end
-end
+#def reset_local_var(variable, *vars)
+#  variable.clear
+#  if vars
+#    vars.each(&:clear)
+#  end
+#end
 
 ###########################################
 # 2. initialize
@@ -87,17 +87,17 @@ def initial_deal(hsh, player, dealer)
   hsh[player][:cards] = []
   hsh[dealer][:cards] = []
   loop do
-    deal(hsh, player, 'hide')
+    deal(hsh, player, 'hidden')
     if twentyone?(hsh, player)
       prompt "#{player.to_s.capitalize} got 21!" 
       sleep(1)
     end
-    deal(hsh, dealer, 'hide')
+    deal(hsh, dealer, 'hidden')
     break if hsh[player][:cards].size && hsh[dealer][:cards].size == 2
   end
 end
 
-def deal(hsh, user, *hide)
+def deal(hsh, user, *hidden)
   new_card = []
   user_hand = hsh[user][:cards]
   deck = hsh[:deck]
@@ -113,7 +113,7 @@ def deal(hsh, user, *hide)
   if is_ace?(card_display) && will_user_bust?(hsh, user)
     modify_ace_value!(new_card)
   end
-  if hide == []
+  if hidden == []
     display_single_card(user, new_card)
     sleep(1)
   end
@@ -144,13 +144,13 @@ end
 
 def display_match_summary(hsh)
   if hsh[:player] == 5
-    "Player wins match!\n"
+    "Player wins match!"
   else
-    "Dealer wins match!\n"
+    "Dealer wins match!"
   end
 end
 
-def user_turn(user)
+def display_user_turn(user)
   "#{user.to_s.capitalize}'s Turn"
 end
 
@@ -189,7 +189,6 @@ def display_user_cards(hsh, user)
     total << arr[2]
     display << output.join
     end
-  # good use of joiner method here
   "#{display.join(' ')} >>> Total: #{total.sum}"
 end
 
@@ -204,6 +203,18 @@ def display_single_card(user, arr)
   #{arr[0].capitalize + arr[1].capitalize}
   MSG
   prompt card
+end
+
+def display_bust(arr, score, hsh)
+  user1 = arr[0].to_s.capitalize
+  user2 = arr[1].to_s.capitalize
+  display_banner "#{user1} busts, #{user2} wins!"
+  score[arr[1]] += 1
+  if user1 == 'Player'
+    display_initial_hands(hsh)
+  else
+    display_all_cards(hsh)
+  end
 end
 
 def exit_game
@@ -221,6 +232,15 @@ end
 ###########################################
 # 4. inspect/modify
 ###########################################
+def inspect_hands(hsh, player, dealer, score)
+  if someone_busted(hsh)
+    display_bust(someone_busted(hsh), score, hsh)
+  else
+    compare_hands(hsh, player, dealer, score)
+    display_all_cards(hsh)
+  end
+end
+
 def validate_integer_input(int)
   if int.include?('.')
     return false
@@ -303,12 +323,11 @@ def reassign_ace!(arr)
     end
   end
   return false
-  # maybe return false after testing the output verifies < 21
 end
 
-def hold_on_seventeen?(hsh, user)
+def hold_on_seventeen(hsh)
   total = []
-  hsh[user][:cards].select {|item| total << item[2] }
+  hsh[:dealer][:cards].select {|item| total << item[2] }
   total if total.sum >= 17 
 end
 
@@ -329,18 +348,6 @@ def twentyone?(hsh, user)
   total.sum == 21
 end
 
-def display_bust(arr, score, hsh)
-  user1 = arr[0].to_s.capitalize
-  user2 = arr[1].to_s.capitalize
-  display_banner "#{user1} busts, #{user2} wins!"
-  score[arr[1]] += 1
-  if user1 == 'Player'
-    display_initial_hands(hsh)
-  else
-    display_all_cards(hsh)
-  end
-end
-
 def someone_busted(hsh)
   player = :player
   dealer = :dealer
@@ -351,16 +358,25 @@ def someone_busted(hsh)
   end
 end
 
+def total_value_cards(hsh, user)
+  user_total = []
+  hsh[user][:cards].select {|item| user_total << item[2] }
+  user_total
+end
+
+def display_winner(user)
+  user_capitalize = user.to_s.capitalize
+  display_banner "#{user_capitalize} wins hand!"
+end
+
 def compare_hands(hsh, player, dealer, score)
-  player_total = []
-  dealer_total = []
-  hsh[player][:cards].select { |item| player_total << item[2] }
-  hsh[dealer][:cards].select { |item| dealer_total << item[2] }
+  player_total = total_value_cards(hsh, player)
+  dealer_total = total_value_cards(hsh, dealer)
   if player_total.sum > dealer_total.sum 
-    display_banner "#{player.to_s.capitalize} wins hand!"
+    display_winner(player) 
     score[player] += 1
   elsif dealer_total.sum > player_total.sum
-    display_banner "#{dealer.to_s.capitalize} wins hand!"
+    display_winner(dealer) 
     score[dealer] += 1 
   else
     display_banner "Push!"
@@ -374,7 +390,7 @@ end
 def ask_hit_stay
   prompt "Would you like to (h)it or (s)tay?"
   reply = gets.chomp.downcase
-  string_input = val_user_input(reply, %w(h s H S), 'string')
+  string_input = val_user_input(reply, ['s', 'S', 'H', 'h'], 'string')
 end
 
 def hit(hsh, user)
@@ -399,7 +415,7 @@ end
 def player_turn(hsh, user)
   loop do
     break if bust?(hsh, user) || twentyone?(hsh, user)
-    display_banner(user_turn(user))
+    display_banner(display_user_turn(user))
     display_initial_hands(hsh)
     action = ask_hit_stay
     clear_screen
@@ -417,9 +433,9 @@ def dealer_turn(hsh, user)
   loop do
     break if bust?(hsh, :player)
     clear_screen
-    display_banner(user_turn(user))
+    display_banner(display_user_turn(user))
     display_all_cards(hsh)
-    break if hold_on_seventeen?(hsh, user) 
+    break if hold_on_seventeen(hsh) 
     hit(hsh, user)
     break if bust?(hsh, user) || twentyone?(hsh, user)
   end
@@ -430,6 +446,7 @@ def welcome_message
   message = <<~MSG
   Welcome to 21!
   The goal is to get to 21 without going over.
+  If neither player gets 21, highest hand wins.
   First player to win 5 hands wins the match!
  
   >>> Dealer must stay on 17 or higher <<<
@@ -440,7 +457,7 @@ def welcome_message
 end
 
 def display_score(hsh)
-  "Match Score:
+  "21 Match Score:
   Dealer: #{hsh[:dealer]}
   Player: #{hsh[:player]}"
 end
@@ -449,6 +466,11 @@ def display_visual_spacer
   puts "\n"
 end
 
+def ask_another_hand()
+  prompt "shuffle and deal again?(y/n)"
+  answer = gets.chomp.downcase
+  string_input = val_user_input(answer, ['y', 'n'], 'string')
+end
 ###########################################
 # 6. game logic
 ###########################################
@@ -463,12 +485,7 @@ loop do
     player_turn(round, :player)
     dealer_turn(round, :dealer)
     clear_screen
-    if someone_busted(round)
-      display_bust(someone_busted(round), score, round)
-    else
-      compare_hands(round, :player, :dealer, score)
-      display_all_cards(round)
-    end
+    inspect_hands(round, :player, :dealer, score)
     display_visual_spacer
     display_banner(display_score(score))
     if match_winner?(score)
@@ -476,9 +493,7 @@ loop do
       return closing_message
     end
     display_visual_spacer
-    prompt "shuffle and deal again?(y/n)"
-    answer = gets.chomp
-    break unless answer == 'y'
+    break if ask_another_hand == 'n'
   end
     break if exit_game == 'y'
 end
