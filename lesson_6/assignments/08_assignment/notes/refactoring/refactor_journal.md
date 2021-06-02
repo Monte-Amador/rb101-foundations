@@ -79,4 +79,4 @@ prompt method.
 - [x]  Cleaned up display by adding display_banner method that takes the input and creates a visual block to inform user what is happening.
 - [x] change last message verification to exit game entirely
 - [x] input validation
-
+- [ ] keep an eye on the ace in the dealer's initial hand, it should be showing up as 1/11 
