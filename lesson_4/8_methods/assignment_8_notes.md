@@ -68,27 +68,16 @@ end
 > last line within the block, how will that affect the return value of select?
 
 ## The `map` Method
-The `map` method also uses the return value from the block similar to `select`. The main
-difference between these two methods is that map uses the return value of the
-block to perform transformation instead of selection. 
+The `map` method also uses the return value from the block similar to `select`. The main difference between these two methods is that map uses the return value of the block to perform transformation instead of selection. 
 
-Because `map` transforms the return value of the block, it's important to
-understand how that works. If, for example the last expression of a block is
-something that will not be an instruction for transformation, it will still
-return something, even `nil`. This is important and can be seen in the
-folloiwng example:
+Because `map` transforms the return value of the block, it's important to understand how that works. If, for example the last expression of a block is something that will not be an instruction for transformation, it will still return something, even `nil`. This is important and can be seen in the folloiwng example:
 
 ```
 [1,2,3].map do |num|
   num.odd?
 end
 ```
-Understanding that the previous code block will *always performs
-transformation based on the return value of the block* is critical to
-understanding just how `map` actually works. In the previous code block,
-`map` will iterate over the array and `num.odd?` will equate to a boolean
-value, which is returned to the new array that `map` will make. So in this
-example, `map` returns: #=> [true,false,true].
+Understanding that the previous code block will *always performs transformation based on the return value of the block* is critical to understanding just how `map` actually works. In the previous code block, `map` will iterate over the array and `num.odd?` will equate to a boolean value, which is returned to the new array that `map` will make. So in this example, `map` returns: #=> [true,false,true].
 
 Looking at a related example should bring this one home. What will be the
 return value of the following:
