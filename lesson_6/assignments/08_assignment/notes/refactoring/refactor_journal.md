@@ -188,8 +188,14 @@ This meant that after a hit the hand would increase correctly, but inside the de
 In other words, the variable wasn't pointing to the same place in memory as it was pointing to the _sum_ of the same place in memory that meant it was pointing to a different object altogether. This is an important slip up and one that took a couple days of debugging to finally understand exactly what was happening. The fix was to remove that assignemnt to the sum version of the array I was referencing and in this case, just handing the variable that acutally returns (correctly) the array from the :hand_total and chaining the Array#sum method to that. That, in effect would create and pass the cached object as simple integer that would _only_ get updated when the hash's array was permanently modified. why didn't i just use an integer instead of an array to work with and not have to append the Array#sum method over and over? Well, integers are immutable and I needed to be able to modify and update the value of the user's hand upon every deal of cards. To keep it all together ::LEFT-OFF:: I'll change the player_turn method to reflect this since I'm idealling going to marry both methods into one with only their distinct logic parts abstracted into theri individual methods.
 
 - [x] rename num to cached_total
-- [ ] someone_busted >> who_busted
+- [x] someone_busted >> who_busted
+- [ ] bring back the 21 announcement inside of the header method for the player during any deal
+
 - [ ] build out singular user turn and pass the dealer and player in as their own arguments that will call upon their respective methods (need to come up with them by abstracting the current player and dealer_turn methods respectively).
+  - player turn's break is at the top of the method
+  - dealer's break is at the bottom of the method. What is the side effect of calling it at the top? Since it's in a loop, it should be the same as the final break immediately moves to the next iteration of the loop. Now that I know the cached object is working as expected, it should be fine.
+  - ::LEFT-OFF:: leaving off with this but it looks like I should be able to keep the user's loops in tact I just need a way to pull them all together and abstract out the duplicate items
+
 - [x] after reaching 5, the game should exit out instead of having to hit return
 
 
