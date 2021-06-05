@@ -1,0 +1,64 @@
+# COMPLETED REFACTORS
+note that the below _order_ is in context of building the game and is here for archiving purposes. It is not in a step-by-step approach for the most part. Just a place to create notes on the fly when I was focusing on something else and discovered something I wanted to pin for later.
+
+- [x] bug: choosing anything allows the game to continue.
+- [x] clear screen at beginning 
+- [x] remove continuous deck and allow for the reshuffle after every iteration of hand.
+- [x] BUG: I'm electing to leave the bug for the higher ranking cards as a preference due to the fact the game is logistically working. I want to focus for now on the non-bug priorities starting with the auto win at 21 from the deal like the bust? actions the end of that particular deal (dealer or palyer). Then move through the refactoring and testing to see if any other bugs show up.
+- [x] if player receives 21 at the initial deal, it still asks if the player wants to hit or stay - display 21 message if player gets 21 from deal and go to winner
+- [x] have the dealer's new card show up like the player's new card so that we see the card first before updating the hand.
+- [x] aces are simply choosing between 1 of the two values in the array. Perhaps all values for aces are 11 but the method can change the value to 1 if the total would equate to a bust with 11. 
+- [x] display should be in this order:
+  - [x] clear screen
+  - [x] display all visible cards for both dealer and player
+  - [x] if player stays, we see their cards again but that should be removed as the top of the screen still shows the current hand.
+- [x] need to hide the first card of the dealer's hand and not show the total until the compare method shows up 
+- [x] would be nice to only dispaly face cards in current format [JD(10)] and display face values with their value and suit [2H(2)]
+- [x] Need a way to hide first card from dealer
+- [x] make sure we can always see the cards like the ttt board
+- [x] BUG: once the dealer's turn begins the screen gets cleared and updates the current hand with the new card
+- [x] BUG: because of the way the hash pulls it's sampled data, it looks like
+- [x] 1. Assign variables to hash values and method processes that assembled
+- [x] 2. Select valid cards based on their `array.size values > 0`. This
+- [x] 3. Inspect the card variable to find out if the return value has a
+- [x] 4. Append all variables into `new_card` array based on order (card, suit,
+- [x] 5. Append card and suit variables to string output for display purposes
+- [x] 6. If the optional parameter `hide` is an empty array (nothing has been
+- [x] 7. return `new_card` array to `user_hand` array. This return will
+- [x] test if card_display is an ace and if user will bust with 11. if so,
+- [x] refactor the display_single_card parameter to take the new_card as an
+- [x] BUG: Aces are working, with the exception that the ace is assigned as an
+  - [x] perhaps when totaling the hand to see if a player busts, we take into
+- [x] need to make better separation between user turns and dealer turns so
+- [x] create heredoc for all visual separation elements like code blocks to
+- [x] Create main loop to keep score and only show the welcome message once. 
+- [x] clear out puts in place of prompts
+- [x] if player busts, dealer's hand shouldn't be shown 
+- [x] More separation for Match Score, think of putting that into the same header display. In fact, perhaps we pass an argument like the prompt works into the header display. That would alleviate the need for manually customizing the header everytime and create some consistency too.
+- [x] Add closing message
+- [x] BUG: if dealer busts, all cards should be displayed with total
+- [x] BUG: display_banner method seems to be returning an extra line
+- [x]  Cleaned up display by adding display_banner method that takes the input and creates a visual block to inform user what is happening.
+- [x] change last message verification to exit game entirely
+- [x] input validation
+- [x] keep an eye on the ace in the dealer's initial hand, it should be showing up as 1/11 
+- [x] initiate cache objects to the player's hash as their own key/value pairs
+- [x] each cache object holds a single array
+  - [x] each single array will contain a single integer that can be mutated
+- [x] pass cache objects to each user turn
+- [x] each user turn is an iteration where they can receive a new card or stay.
+- [x] each iteration begins with an inspection to see if the user has reached 21 or has busted.
+- [x] if neither of those conditions have been met, we continue to iterate (note that the single array can return an integer without calling the index if you add the Array#sum method to the array. I have done this on the player's turn line 370
+- [x] each iteration gives the user a choice to hit or stay
+  - [x] if a user hits, that invokes the deal method that will assign a random card to the user with a new value.
+  - [x] if the user stays, we exit the iteration and move to the next user (if there is one, otherwise we wrap up the hand).
+- [x] if a user receives a new card, the new card's value will change the cached object that needs to be updated before the next iteration. 
+  - [x] the new_card array holds the value of the new card in index [2].
+  - [x] new_card[2] needs to add to and reassign the value in the cached object before the next call to iterate with the user's turn.
+- [x] when player busts, dealer still gets turn
+- [x] initial total is working, but doesn't update
+- [x] rename num to cached_total
+- [x] someone_busted >> who_busted
+- [x] after reaching 5, the game should exit out instead of having to hit return
+- [x] create total(user) method or assign accordingly
+

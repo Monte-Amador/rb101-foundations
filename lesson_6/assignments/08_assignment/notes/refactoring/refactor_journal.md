@@ -1,23 +1,6 @@
-- [x] bug: choosing anything allows the game to continue.
-- [x] clear screen at beginning 
-- [x] remove continuous deck and allow for the reshuffle after every iteration of hand.
-- [x] BUG: I'm electing to leave the bug for the higher ranking cards as a preference due to the fact the game is logistically working. I want to focus for now on the non-bug priorities starting with the auto win at 21 from the deal like the bust? actions the end of that particular deal (dealer or palyer). Then move through the refactoring and testing to see if any other bugs show up.
-- [x] if player receives 21 at the initial deal, it still asks if the player wants to hit or stay - display 21 message if player gets 21 from deal and go to winner
-- [x] have the dealer's new card show up like the player's new card so that we see the card first before updating the hand.
-- [x] aces are simply choosing between 1 of the two values in the array. Perhaps all values for aces are 11 but the method can change the value to 1 if the total would equate to a bust with 11. 
-- [x] display should be in this order:
-  - [x] clear screen
-  - [x] display all visible cards for both dealer and player
-  - [x] if player stays, we see their cards again but that should be removed as the top of the screen still shows the current hand.
-- [x] need to hide the first card of the dealer's hand and not show the total until the compare method shows up 
 
 ## refinements
 - [ ] Also would be nice to say blackjack if player has a face card and ace upon deal
-- [x] would be nice to only dispaly face cards in current format [JD(10)] and display face values with their value and suit [2H(2)]
-- [x] Need a way to hide first card from dealer
-- [x] make sure we can always see the cards like the ttt board
-- [x] BUG: once the dealer's turn begins the screen gets cleared and updates the current hand with the new card
-- [x] BUG: because of the way the hash pulls it's sampled data, it looks like
   there's a preference for face cards, but there isn't a preference per se,
 it's that there's a sample of the available keys choosing to pick a card within
 a suit. Because there are 5 possible types of cards there is a 1 in 5 chance
@@ -32,54 +15,30 @@ hash values and creates a temporary container (local to method array) to hold
 the information that can be later organized and passed to the user's hand of
 cards which permanently alters the user's hand.
 
-- [x] 1. Assign variables to hash values and method processes that assembled
   together return an array holding the `new_card` data and append to the
 `user_hand` array. 
-- [x] 2. Select valid cards based on their `array.size values > 0`. This
   ensures that the arrays are not empty and are therefore a valid option to
 choose a card from.
-- [x] 3. Inspect the card variable to find out if the return value has a
   necessary two index integer (i.e. `:'10' => card[0] + card[1]`) or not.
 Return value defaults to `card[0]` otherwise.
-- [x] 4. Append all variables into `new_card` array based on order (card, suit,
   value).
-- [x] 5. Append card and suit variables to string output for display purposes
   when showing the card that is dealt (without value). 
-- [x] 6. If the optional parameter `hide` is an empty array (nothing has been
   passed into it) then display the individual card upon deal without value
 attached to the string output.
-- [x] 7. return `new_card` array to `user_hand` array. This return will
   permanently modify the `user_hand` array.
-- [x] test if card_display is an ace and if user will bust with 11. if so,
   modify ace value's.
-- [x] refactor the display_single_card parameter to take the new_card as an
   argument. Note that the new_card object is a nested array like: [["3", "H",
 3]]
-- [x] BUG: Aces are working, with the exception that the ace is assigned as an
   11 from the deal like it should, it keeps that value through the next hit. So
 for example, the hand is an ace, 2, and 10 => 13. but instead it counts the
 initial ace as 11 instead of changing it to a 1.
-  - [x] perhaps when totaling the hand to see if a player busts, we take into
     account if they have a card with a value of 11 (an ace). if with the 11
 they bust, reassign the 11 to a 1 and re-total.
 
 ## Refactor output for displaying cards with better readability
-- [x] need to make better separation between user turns and dealer turns so
   that it's visually more clear what is happening. Look at bringing in the
 prompt method.
-- [x] create heredoc for all visual separation elements like code blocks to
   inform the user what is happening.
-- [x] Create main loop to keep score and only show the welcome message once. 
-- [x] clear out puts in place of prompts
-- [x] if player busts, dealer's hand shouldn't be shown 
-- [x] More separation for Match Score, think of putting that into the same header display. In fact, perhaps we pass an argument like the prompt works into the header display. That would alleviate the need for manually customizing the header everytime and create some consistency too.
-- [x] Add closing message
-- [x] BUG: if dealer busts, all cards should be displayed with total
-- [x] BUG: display_banner method seems to be returning an extra line
-- [x]  Cleaned up display by adding display_banner method that takes the input and creates a visual block to inform user what is happening.
-- [x] change last message verification to exit game entirely
-- [x] input validation
-- [x] keep an eye on the ace in the dealer's initial hand, it should be showing up as 1/11 
 
 - [ ] look at renaming the display_initial_hands method as it is the only one being called during the player_turn method. It might be a bit confusing since we continue looping back to it so it's not really the initial hands by the second iteration, it will display the modified hand.
 
@@ -109,10 +68,6 @@ total_value_cards it is worth thinking about using this as the master total meth
 
 Walkthrough:
 
-- [x] initiate cache objects to the player's hash as their own key/value pairs
-- [x] each cache object holds a single array
-  - [x] each single array will contain a single integer that can be mutated
-- [x] pass cache objects to each user turn
   x bust?(hsh, user, total) # update all occurences
     - dealer_turn
     x someone_busted
@@ -124,15 +79,6 @@ Walkthrough:
     x deal(hsh, user, num)# update all occurences
       x will_user_bust?(num)# update all occurences
   x initial_deal (amend method to assign local variables to the method for the total values of each player).
-- [x] each user turn is an iteration where they can receive a new card or stay.
-- [x] each iteration begins with an inspection to see if the user has reached 21 or has busted.
-- [x] if neither of those conditions have been met, we continue to iterate (note that the single array can return an integer without calling the index if you add the Array#sum method to the array. I have done this on the player's turn line 370
-- [x] each iteration gives the user a choice to hit or stay
-  - [x] if a user hits, that invokes the deal method that will assign a random card to the user with a new value.
-  - [x] if the user stays, we exit the iteration and move to the next user (if there is one, otherwise we wrap up the hand).
-- [x] if a user receives a new card, the new card's value will change the cached object that needs to be updated before the next iteration. 
-  - [x] the new_card array holds the value of the new card in index [2].
-  - [x] new_card[2] needs to add to and reassign the value in the cached object before the next call to iterate with the user's turn.
 
 x. deal cards => initial_deal
 x. count cards => initial_count #create
@@ -141,8 +87,6 @@ x. count cards => initial_count #create
 5. dealer turn => dealer_turn
 6. update count => deal
 7. compare counts => inspect
-- [x] when player busts, dealer still gets turn
-- [x] initial total is working, but doesn't update
 - [ ] the ace reassignment is working, but for some reason the dealer stopped at 12 when it should have continued 
 - [ ] The reassignment of the ace object when the dealer is about to bust works by inspecting the values of the dealer's cards and if it finds any 11s and the dealer is about to bust, it will change in place the value of the 11 to 1. This will keep the dealer from busting and it updates the score correctly as well as the card values, however the total value seems not to be getting updated until the next iteration after the hit, which makes sense as it was designed this way. 
 
@@ -187,8 +131,6 @@ This meant that after a hit the hand would increase correctly, but inside the de
 
 In other words, the variable wasn't pointing to the same place in memory as it was pointing to the _sum_ of the same place in memory that meant it was pointing to a different object altogether. This is an important slip up and one that took a couple days of debugging to finally understand exactly what was happening. The fix was to remove that assignemnt to the sum version of the array I was referencing and in this case, just handing the variable that acutally returns (correctly) the array from the :hand_total and chaining the Array#sum method to that. That, in effect would create and pass the cached object as simple integer that would _only_ get updated when the hash's array was permanently modified. why didn't i just use an integer instead of an array to work with and not have to append the Array#sum method over and over? Well, integers are immutable and I needed to be able to modify and update the value of the user's hand upon every deal of cards. To keep it all together ::LEFT-OFF:: I'll change the player_turn method to reflect this since I'm idealling going to marry both methods into one with only their distinct logic parts abstracted into theri individual methods.
 
-- [x] rename num to cached_total
-- [x] someone_busted >> who_busted
 - [ ] bring back the 21 announcement inside of the header method for the player during any deal
 
 - [ ] build out singular user turn and pass the dealer and player in as their own arguments that will call upon their respective methods (need to come up with them by abstracting the current player and dealer_turn methods respectively).
@@ -196,7 +138,6 @@ In other words, the variable wasn't pointing to the same place in memory as it w
   - dealer's break is at the bottom of the method. What is the side effect of calling it at the top? Since it's in a loop, it should be the same as the final break immediately moves to the next iteration of the loop. Now that I know the cached object is working as expected, it should be fine.
   - ::LEFT-OFF:: leaving off with this but it looks like I should be able to keep the user's loops in tact I just need a way to pull them all together and abstract out the duplicate items
 
-- [x] after reaching 5, the game should exit out instead of having to hit return
 
 
 - [ ] still getting the will_user_bust? error as it looks like the num is coming in as an array... sometimes. it's looking like it may be during the deal method calling of will_user_bust? while I'm passing in the initial empty array and it gets triggered when an ace is on deck maybe?
@@ -204,7 +145,6 @@ In other words, the variable wasn't pointing to the same place in memory as it w
 - [ ] abstract the initialization of the deck hash. It seems that there are 4 identical inner hashes except for their suits. Would be great to come up with a method to integrate that concept.
 - [ ] minimize all the total methods that are creeping up
 - [ ] add back the 21 announcement for the player
-- [x] create total(user) method or assign accordingly
 
 maybe discovered a way to go about the massive amount of variable declaration, perhaps it's worth testing to see if I can create a hash to hold all of them and just include the hash as a parameter?
 
