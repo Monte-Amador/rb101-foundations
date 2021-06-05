@@ -15,8 +15,8 @@ end
 
 # rubocop:disable Metrics/MethodLength
 def initialize_twenty_one
-  { dealer: { cards: [], hand_total: [] },
-    player: { cards: [], hand_total: [] },
+  { dealer: { cards: [], hand_total: [0] },
+    player: { cards: [], hand_total: [0] },
     deck: {
       hearts: {
         cards: {
@@ -75,25 +75,25 @@ end
 # rubocop:enable Metrics/MethodLength
 
 def initial_deal(hsh, player, dealer)
-  hsh[player][:cards] = [['10', 'C', 10], ['A', 'S', 11]]
-  hsh[dealer][:cards] = [['3', 'H', 3],['A', 'C', 11]]
-  #loop do
-  #  deal(hsh, player)
-  #  deal(hsh, dealer, 'hidden')
-  #  break if hsh[player][:cards].size && hsh[dealer][:cards].size == 2
-  #end
+  hsh[player][:cards] = []
+  hsh[dealer][:cards] = []
+  loop do
+    deal(hsh, player)
+    deal(hsh, dealer, 'hidden')
+    break if hsh[player][:cards].size && hsh[dealer][:cards].size == 2
+  end
 end
 
 def initial_count(hsh)
-  hsh[:player][:hand_total] = total_value_cards(hsh, :player).sum
-  hsh[:dealer][:hand_total] = total_value_cards(hsh, :dealer).sum
+  hsh[:player][:hand_total][0] = total_value_cards(hsh, :player).sum
+  hsh[:dealer][:hand_total][0] = total_value_cards(hsh, :dealer).sum
 end
 
 # rubocop:disable Metrics/MethodLength
 # rubocop:disable Metrics/AbcSize
 def deal(hsh, user, *hidden)
   new_card = []
-  user_total = hsh[user][:hand_total]
+  user_total = hsh[user][:hand_total] # => array
   user_hand = hsh[user][:cards]
   deck = hsh[:deck]
   suit = deck.keys.sample
@@ -112,9 +112,8 @@ def deal(hsh, user, *hidden)
     display_single_card(user, new_card)
     sleep(1)
   end
-  #user_total = new_card[2]
+  user_total[0] += new_card[2]
   user_hand << new_card
-  hsh[user][:hand_total] = total_value_cards(hsh, user).sum
 end
 # rubocop:enable Metrics/MethodLength
 # rubocop:enable Metrics/AbcSize
@@ -171,7 +170,7 @@ def display_dealer_cards(hsh, user)
   display.join(' ')
 end
 
-def display_user_cards(hsh, user, num)
+def display_user_cards(hsh, user, cached_total)
   display = []
   hand = hsh[user][:cards]
   hand.each do |arr|
@@ -180,12 +179,12 @@ def display_user_cards(hsh, user, num)
     output << "(#{arr[2]})"
     display << output.join
   end
-  "#{display.join(' ')} >>> Total: #{num}"
+  "#{display.join(' ')} >>> Total: #{cached_total}"
 end
 
 def display_all_cards(hsh)
-  dealer_total = hsh[:dealer][:hand_total]
-  player_total = hsh[:player][:hand_total]
+  dealer_total = hsh[:dealer][:hand_total].sum
+  player_total = hsh[:player][:hand_total].sum
   prompt "Dealer's Hand: #{display_user_cards(hsh, :dealer, dealer_total)}"
   prompt "Player's Hand: #{display_user_cards(hsh, :player, player_total)}"
 end
@@ -223,8 +222,8 @@ def closing_message
 end
 
 def inspect_hands(hsh, player, dealer, score)
-  if someone_busted(hsh)
-    display_bust(someone_busted(hsh), score, hsh)
+  if who_busted(hsh)
+    display_bust(who_busted(hsh), score, hsh)
   else
     compare_hands(hsh, player, dealer, score)
     display_all_cards(hsh)
@@ -270,12 +269,12 @@ def modify_ace_value!(arr)
   arr[2] = 1
 end
 
-def will_user_bust?(num)
-  if num == []
-    false
-  else
-    num >= 11
-  end
+def will_user_bust?(total_arr)
+  #if total_arr == []
+  #  false
+  #else
+  total_arr.sum >= 11
+  #end
 end
 
 def reassign_ace!(hsh, user, arr)
@@ -284,40 +283,34 @@ def reassign_ace!(hsh, user, arr)
       sub_arr[2] = 1
     end
   end
-  hsh[user][:hand_total] = total_value_cards(hsh, user).sum
-  false
+  hsh[user][:hand_total][0] = total_value_cards(hsh, user).sum
 end
 
-def hold_on_seventeen(num)
-  num if num >= 17
+def hold_on_seventeen(cached_total)
+  cached_total if cached_total >= 17
 end
-#def hold_on_seventeen(hsh)
-#  total = []
-#  hsh[:dealer][:cards].select { |item| total << item[2] }
-#  total if total.sum >= 17
-#end
 
-def bust?(hsh, user, num)
+def bust?(hsh, user, cached_total)
   values = []
   cards = hsh[user][:cards]
   cards.select { |item| values << item[2] } # best method to use?
-  if num > 21 && values.include?(11)
+  if cached_total > 21 && values.include?(11)
     reassign_ace!(hsh, user, cards)
-    #false
+    false
   else
-    num > 21
+    cached_total > 21
   end
 end
 
-def twentyone?(num)
-  num == 21
+def twentyone?(cached_total)
+  cached_total == 21
 end
 
-def someone_busted(hsh)
+def who_busted(hsh)
   player = :player
   dealer = :dealer
-  dealer_total = hsh[:dealer][:hand_total]
-  player_total = hsh[:player][:hand_total]
+  dealer_total = hsh[:dealer][:hand_total].sum
+  player_total = hsh[:player][:hand_total].sum
   if !!bust?(hsh, player, player_total)
     [player, dealer]
   elsif !!bust?(hsh, dealer, dealer_total)
@@ -326,6 +319,7 @@ def someone_busted(hsh)
 end
 
 def total_value_cards(hsh, user)
+  # test a better way to achieve this without the map method as it's return value is more than we need. Look at using each or each_with_object.
   total = hsh[user][:cards].map { |item| item[2] }
 end
 
@@ -335,8 +329,8 @@ def display_winner(user)
 end
 
 def compare_hands(hsh, player, dealer, score)
-  player_total = hsh[player][:hand_total]
-  dealer_total = hsh[dealer][:hand_total]
+  player_total = hsh[player][:hand_total].sum
+  dealer_total = hsh[dealer][:hand_total].sum
   #player_total = total_value_cards(hsh, player)
   #dealer_total = total_value_cards(hsh, dealer)
   if player_total > dealer_total
@@ -356,17 +350,17 @@ def ask_hit_stay
   val_user_input(reply, ['s', 'S', 'H', 'h'])
 end
 
-def hit(hsh, user, total)
+def hit(hsh, user)
   if user == :dealer
     sleep(2)
   end
   deal(hsh, user)
   sleep(1)
   clear_screen
-  if twentyone?(total)
-    prompt "#{user.to_s.capitalize} got 21!"
-    sleep(2)
-  end
+  #if twentyone?(total)
+  #  prompt "#{user.to_s.capitalize} got 21!"
+  #  sleep(2)
+  #end
 end
 
 def stay
@@ -375,16 +369,29 @@ def stay
   clear_screen
 end
 
+def user_turn(hsh, user)
+  loop do
+    total_arr = hsh[user][:hand_total]
+    break if bust?(hsh, user, total_arr.sum) || twentyone?(total_arr.sum)
+    display_banner(display_user_turn(user))
+    if user == :player
+      player_turn(hsh, user)
+    else
+      dealer_turn(hsh, user)
+    end
+  end
+end
+
 def player_turn(hsh, user)
   loop do
-    total = hsh[user][:hand_total]
+    total = hsh[user][:hand_total].sum
     break if bust?(hsh, user, total) || twentyone?(total)
     display_banner(display_user_turn(user))
     display_initial_hands(hsh)
     action = ask_hit_stay
     clear_screen
     if action == 'h'
-      hit(hsh, user, total)
+      hit(hsh, user)
     elsif action == 's'
       return stay
     else
@@ -395,16 +402,14 @@ end
 
 def dealer_turn(hsh, user)
   loop do
-    total = hsh[user][:hand_total]
-    break if bust?(hsh, :player, hsh[:player][:hand_total])
+    total_arr = hsh[user][:hand_total]
+    break if bust?(hsh, :player, hsh[:player][:hand_total].sum)
     clear_screen
     display_banner(display_user_turn(user))
     display_all_cards(hsh)
-    break if hold_on_seventeen(total)
-    hit(hsh, user, total)
-    total = hsh[user][:hand_total]
-    #binding.pry
-    break if bust?(hsh, user, total) || twentyone?(total)
+    break if hold_on_seventeen(total_arr.sum)
+    hit(hsh, user)
+    break if bust?(hsh, user, total_arr.sum) || twentyone?(total_arr.sum)
   end
 end
 
@@ -464,10 +469,11 @@ loop do
     inspect_hands(round, :player, :dealer, score)
     display_visual_spacer
     display_banner(display_score(score))
-    continue
     if match_winner?(score)
       prompt display_match_summary(score)
       return closing_message
+    else
+      continue 
     end
     display_visual_spacer
   end
