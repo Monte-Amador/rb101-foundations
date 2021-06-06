@@ -1,8 +1,5 @@
-- [x] Refactor output for displaying cards with better readability
 
 - [ ] look at renaming the display_initial_hands method as it is the only one being called during the player_turn method. It might be a bit confusing since we continue looping back to it so it's not really the initial hands by the second iteration, it will display the modified hand.
-- [x] rename hidden to hide
-- [x] change user_total in deal method to total_arr
 - [ ] see about abstracting the logic of the deal method if that is possible. 
 
 ## Caching the total
@@ -44,8 +41,6 @@ bust? By invoking the actual total method within the user's turn method, we assi
 
 twentyone? also uses the same approach as the bust? method in how it uses its own internal array, and is a perfect candidate
 
-- [x] the test is how to permanently change the outer variable and still use it (as an argument) when the loop goes through another iteration.
-- [x] so that works simply by looping through and adding the output to the total array on each turn.
 
 total_value_cards it is worth thinking about using this as the master total method that we can use for caching purposes. Though note it does not return a sum. Instead it returns an array of the values(int) within the players cards. This array is then passed to the compare_hands method and the Array#sum function is invoked on the arrays there. Some tweaking will be necessary to return a simple sum for display purposes.
 
@@ -80,7 +75,6 @@ x. compare counts => inspect
 ===================================================
 ## Creating one play_round method
 
-- [ ] create one user turn iteration for both dealer and player by abstracting the individual parts for player and dealer to their own more succint methods.
 
 ### Stepping through the vision
 - call the play_hand(hsh)
@@ -88,16 +82,9 @@ x. compare counts => inspect
 - play_hand is not a loop, it's a set of instructions from the intiation of the game to its sub-parts, encompassing all other methods maybe. Or, it's just for the players.
 - We want to streamline the indidvidula hand methods into something that will remvoe a lot of the duplication. The player turn has different needs than the dealear and vice versa.
 - [ ] ::LEFT-OFF:: user_turn is growing unkindly
-- [x] The combination of user_turns is a good idea but each user needs their own iteration to account for their hit/stay processes. 
-- [x] play_hand calls two different user_turn methods, one for each user.
-- [x] cached_total >>> total
-- [x] total_arr >>> cached_total
-- [x] dealer_total could benefit from creating a new method called dealer_sum that takes the hsh as an argument and return the sum of the dealer's :hand_total.sum. Same with the player and we can further abstract the .sums up into their own methods where necessary.
-- [x] a little more separation after player gets 21 because too often the game is over without really understanding thate the dealer's turn is up. More sleep separation involved. 
 
 - [ ] MAYBE: abstract the initialization of the deck hash. It seems that there are 4 identical inner hashes except for their suits. Would be great to come up with a method to integrate that concept.
 
-- [x] minimize all the total methods that are creeping up
 
 - [ ] refactor note: one thing I am noticing is the lack of consistency between calling an ideal single total parameter for the particular user, and other methods that require the use of two separate parameters because of the need for both totals (e.g. dealer_turn => display_all_cards(hsh, p_total, d_total). I'd love to just pass the parameter of total as either an array with both cached variables or a single value. It's too hard to maintain this current way.
 - [ ] need two separate totals in:
