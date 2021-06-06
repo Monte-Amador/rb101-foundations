@@ -467,8 +467,9 @@ loop do
     initial_deal(round, :player, :dealer)
     initial_count(round)
     clear_screen
-    user_turn(round, :player) # can we make one method call for both players?
-    user_turn(round, :dealer)
+    play_round(round)
+    #user_turn(round, :player) # can we make one method call for both players?
+    #user_turn(round, :dealer)
     clear_screen
     inspect_hands(round, :player, :dealer, score)
     display_visual_spacer
