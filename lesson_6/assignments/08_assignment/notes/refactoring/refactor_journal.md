@@ -1,4 +1,3 @@
-
 ## refinements
 - [ ] Also would be nice to say blackjack if player has a face card and ace upon deal
   there's a preference for face cards, but there isn't a preference per se,
@@ -129,27 +128,21 @@ OKAY, I GOT THE BUG! it looks like the issue was because the assignment of the `
 
 This meant that after a hit the hand would increase correctly, but inside the dealer_turn loop, the `total` was still referencing a different object that looked like it was the same thing. That's what was passed onto the bust method and that's why it wouldn't get reassigned correctly until the next iteration which did reassign the total correctly at the beginning of the loop but if in the case it was a bust, we didn't check that until the hold_on_seventeen method was finished checking, and in this case breaking so the ace reassignement that is triggered from the bust? method wouldn't catch the ace and reassign the value and update the total until the very end of the loop --- due to the break for bust being at the end of the loop iteration.
 
-In other words, the variable wasn't pointing to the same place in memory as it was pointing to the _sum_ of the same place in memory that meant it was pointing to a different object altogether. This is an important slip up and one that took a couple days of debugging to finally understand exactly what was happening. The fix was to remove that assignemnt to the sum version of the array I was referencing and in this case, just handing the variable that acutally returns (correctly) the array from the :hand_total and chaining the Array#sum method to that. That, in effect would create and pass the cached object as simple integer that would _only_ get updated when the hash's array was permanently modified. why didn't i just use an integer instead of an array to work with and not have to append the Array#sum method over and over? Well, integers are immutable and I needed to be able to modify and update the value of the user's hand upon every deal of cards. To keep it all together ::LEFT-OFF:: I'll change the player_turn method to reflect this since I'm idealling going to marry both methods into one with only their distinct logic parts abstracted into theri individual methods.
+In other words, the variable wasn't pointing to the same place in memory as it was pointing to the _sum_ of the same place in memory that meant it was pointing to a different object altogether. This is an important slip up and one that took a couple days of debugging to finally understand exactly what was happening. The fix was to remove that assignemnt to the sum version of the array I was referencing and in this case, just handing the variable that acutally returns (correctly) the array from the :hand_total and chaining the Array#sum method to that. That, in effect would create and pass the cached object as simple integer that would _only_ get updated when the hash's array was permanently modified. why didn't i just use an integer instead of an array to work with and not have to append the Array#sum method over and over? Well, integers are immutable and I needed to be able to modify and update the value of the user's hand upon every deal of cards. To keep it all together I'll change the player_turn method to reflect this since I'm idealling going to marry both methods into one with only their distinct logic parts abstracted into theri individual methods.
 
-- [ ] bring back the 21 announcement inside of the header method for the player during any deal
+- [ ] 21 announcement is working but this should be in the banner 
+- [ ] would be nice to keep the match score persistent?
 
-- [ ] build out singular user turn and pass the dealer and player in as their own arguments that will call upon their respective methods (need to come up with them by abstracting the current player and dealer_turn methods respectively).
-  - player turn's break is at the top of the method
-  - dealer's break is at the bottom of the method. What is the side effect of calling it at the top? Since it's in a loop, it should be the same as the final break immediately moves to the next iteration of the loop. Now that I know the cached object is working as expected, it should be fine.
-  - ::LEFT-OFF:: leaving off with this but it looks like I should be able to keep the user's loops in tact I just need a way to pull them all together and abstract out the duplicate items
-
-
-
-- [ ] still getting the will_user_bust? error as it looks like the num is coming in as an array... sometimes. it's looking like it may be during the deal method calling of will_user_bust? while I'm passing in the initial empty array and it gets triggered when an ace is on deck maybe?
-- [ ] create one user turn iteration for both dealer and player by abstracting the individual parts for player and dealer to their own more succint methods
-- [ ] abstract the initialization of the deck hash. It seems that there are 4 identical inner hashes except for their suits. Would be great to come up with a method to integrate that concept.
+- [ ] MAYBE: ideally, we just contain both the player and the dealer into one method instead of having to call it twice, even within the current abstracted setup we still need to call the method twice in the game loop. Much better would be to call a single play_hand(round) method that would go through each player in succesion since if follows that the palyer will always go first, and the dealer second. 
+  - [ ] create one user turn iteration for both dealer and player by abstracting the individual parts for player and dealer to their own more succint methods
+- [ ] MAYBE: abstract the initialization of the deck hash. It seems that there are 4 identical inner hashes except for their suits. Would be great to come up with a method to integrate that concept.
 - [ ] minimize all the total methods that are creeping up
-- [ ] add back the 21 announcement for the player
 
 maybe discovered a way to go about the massive amount of variable declaration, perhaps it's worth testing to see if I can create a hash to hold all of them and just include the hash as a parameter?
 
+::LEFT-OFF:: rewrite the following order into an order that I currently have as a way of double checking the logic of the cached_total variable that is being passed around. We want to only declare the actual total method once or twice but nothing more as the cached_total object is being held in a hash we can easily (read inexpensively) mutate it and that updates all instances of the variable that points to that object (big lesson learned on this one).
 - [ ] 1. variables are assigned in main loop
-- [ ] 2. variables are passed into each user turn for modificaation
+- [ ] 2. variables are passed into each user turn for modification
 - [ ] 3. user turns mutates the outer scoped cached variables by invoking the total_value_cards method. Inside the user turn method we also pass to the following three methods:
   - [ ] bust?
   - [ ] twentyone?
@@ -162,15 +155,10 @@ maybe discovered a way to go about the massive amount of variable declaration, p
   c. compare_hands(hsh, dealer, player, score)
   d. display_all_cards(hsh) => display_user_cards
 
-- [ ] refactor note: one thing I am noticiing is the lack of consistency between calling an ideal single total parameter for the particular user, and other methods that require the use of two separate parameters because of the need for both totals (e.g. dealer_turn => display_all_cards(hsh, p_total, d_total). I'd love to just pass the parameter of total as either an array with both cached variables or a single value. It's too hard to maintain this current way.
+- [ ] refactor note: one thing I am noticing is the lack of consistency between calling an ideal single total parameter for the particular user, and other methods that require the use of two separate parameters because of the need for both totals (e.g. dealer_turn => display_all_cards(hsh, p_total, d_total). I'd love to just pass the parameter of total as either an array with both cached variables or a single value. It's too hard to maintain this current way.
 - [ ] need two separate totals in:
   - [ ] inspect_hands
   - [ ] compare_hands
   - [ ] display_all_cards
 
-## one turn for both user? It looks as if you can use the hold_on_senveteen method by using a one liner if statement if the user is :dealer
-
-DEBUG:
-- [ ] hit gave an ace worth 11 instead of 1. It should have reassigned it so that means the will_user_bust or ace? methods didn't perform correctly.
-- [ ] further inspection shows that the outer variables are not updating.
-- [ ] this is happening because you can't modify the outer variables from within the method, presumably because they are integers and not strings. A trip to irb will help this. Integers are immutable. That's that... now I need to refactor the caching objects to be arrays.
+ACE REASSIGNMENT INITIAL DEBUG NOTES:

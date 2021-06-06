@@ -62,3 +62,22 @@ note that the below _order_ is in context of building the game and is here for a
 - [x] after reaching 5, the game should exit out instead of having to hit return
 - [x] create total(user) method or assign accordingly
 
+## Creation of single user_turn method
+
+- [x] build out singular user turn and pass the dealer and player in as their own arguments that will call upon their respective methods (need to come up with them by abstracting the current player and dealer_turn methods respectively).
+  - [x] dealer's break is at the bottom of the method. What is the side effect of calling it at the top? Since it's in a loop, it should be the same as the final break immediately moves to the next iteration of the loop. Now that I know the cached object is working as expected, it should be fine.
+  - [x] refactoring the player_turn method to incorporate the cached object works with moving the break bust? method to the bottom of the loop.
+  - [x] it looks like the user_turn method doesn't need to have its own loop if we provide that within the specific user's method. This helps with the break values too. 
+  - [x] Although the previous note about not creating another loop within the user_turn method, that's not the right decision for me because what I'm after is a single loop from which we can input the individual parts of the player and dealer methods as the hands move forward.
+  - [x] DEBUG: I orginally had the right idea of inspecting the return value from the player_turn method and if it equated to a specific string then it should break the loop. The logic worked but I appended the conditiaonal inspection along with the other two (bust? and twentyone?) conditions. This meant that the player_turn method was getting called twice. The solution was to move the break condition into the method call itself so that the break condition inspecting the method would call the method. This worked.
+    - [x] the solution was to move the break condition to the method call so that we can test the return value upon each iteration. The side effect of this is that it no longer specifies that the user decided to stay. This can be a line of text that is printed to the screen from within the method before it returns 'stay'
+  - [x] Moving onto refactoring the dealer portion of the user_turn. In looking at the inner break condition of the original method, I had it setup explicitely to break the dealer_turn loop if hold_on_seventeen returned something. Following the player_turn approach to breaking out of the user_turn loop, we might be able to simply break out of the loop if the return value is the cached_total at this point.
+- [x] just noted that the player is being asked to stay when they have 21, when it should be breaking. Perhaps this is why it's better to move the break methods to the top of the loop iteration inside the user_turn method. Moving it to the top created an 'undefind local variable or method 'total_arr' error on line 399
+- [x] need to acknowledge when the user chooses to stay and pause
+- [x] dealer header missing on dealer turn
+- [x] Bug: dealer not holding on seventeen
+- [x] still getting the will_user_bust? error as it looks like the num is coming in as an array... sometimes. it's looking like it may be during the deal method calling of will_user_bust? while I'm passing in the initial empty array and it gets triggered when an ace is on deck maybe?
+- [x] hit gave an ace worth 11 instead of 1. It should have reassigned it so that means the will_user_bust or ace? methods didn't perform correctly.
+- [x] further inspection shows that the outer variables are not updating.
+- [x] this is happening because you can't modify the outer variables from within the method, presumably because they are integers and not strings. A trip to irb will help this. Integers are immutable. That's that... now I need to refactor the caching objects to be arrays.
+

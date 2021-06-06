@@ -1,6 +1,3 @@
-require "pry"
-require "pry-byebug"
-
 def prompt(msg)
   puts "=> #{msg}"
 end
@@ -114,6 +111,10 @@ def deal(hsh, user, *hidden)
   end
   user_total[0] += new_card[2]
   user_hand << new_card
+  if twentyone?(user_total.sum) && user == :player
+    puts "#{user} got 21!"
+    sleep(1)
+  end
 end
 # rubocop:enable Metrics/MethodLength
 # rubocop:enable Metrics/AbcSize
@@ -150,7 +151,7 @@ end
 
 def display_initial_hands(hsh)
   prompt "Dealer's Hand: #{display_dealer_cards(hsh, :dealer)}"
-  prompt "Player's Hand: #{display_user_cards(hsh, :player, hsh[:player][:hand_total])}"
+  prompt "Player's Hand: #{display_user_cards(hsh, :player, hsh[:player][:hand_total].sum)}"
 end
 
 def display_dealer_cards(hsh, user)
@@ -319,8 +320,9 @@ def who_busted(hsh)
 end
 
 def total_value_cards(hsh, user)
-  # test a better way to achieve this without the map method as it's return value is more than we need. Look at using each or each_with_object.
-  total = hsh[user][:cards].map { |item| item[2] }
+  total = hsh[user][:cards].each_with_object([]) do |inner_array, arr|
+    arr << inner_array[2]
+  end
 end
 
 def display_winner(user)
@@ -331,8 +333,6 @@ end
 def compare_hands(hsh, player, dealer, score)
   player_total = hsh[player][:hand_total].sum
   dealer_total = hsh[dealer][:hand_total].sum
-  #player_total = total_value_cards(hsh, player)
-  #dealer_total = total_value_cards(hsh, dealer)
   if player_total > dealer_total
     display_winner(player)
     score[player] += 1
@@ -350,17 +350,17 @@ def ask_hit_stay
   val_user_input(reply, ['s', 'S', 'H', 'h'])
 end
 
-def hit(hsh, user)
+def hit(hsh, user, cached_total)
   if user == :dealer
     sleep(2)
   end
   deal(hsh, user)
   sleep(1)
   clear_screen
-  #if twentyone?(total)
-  #  prompt "#{user.to_s.capitalize} got 21!"
-  #  sleep(2)
-  #end
+  if twentyone?(cached_total)
+    prompt "#{user.to_s.capitalize} got 21!"
+    sleep(2)
+  end
 end
 
 def stay
@@ -375,42 +375,34 @@ def user_turn(hsh, user)
     break if bust?(hsh, user, total_arr.sum) || twentyone?(total_arr.sum)
     display_banner(display_user_turn(user))
     if user == :player
-      player_turn(hsh, user)
+      break if player_turn(hsh, user, total_arr.sum) == 'stay'
     else
-      dealer_turn(hsh, user)
+      break if bust?(hsh, :player, hsh[:player][:hand_total].sum)
+      break if dealer_turn(hsh, user, total_arr.sum) == total_arr.sum
     end
   end
 end
 
-def player_turn(hsh, user)
-  loop do
-    total = hsh[user][:hand_total].sum
-    break if bust?(hsh, user, total) || twentyone?(total)
-    display_banner(display_user_turn(user))
+def player_turn(hsh, user, cached_total)
     display_initial_hands(hsh)
     action = ask_hit_stay
     clear_screen
     if action == 'h'
-      hit(hsh, user)
+      hit(hsh, user, cached_total)
     elsif action == 's'
-      return stay
+      display_banner("Player stays with #{cached_total}")
+      sleep(2)
+      clear_screen
+      'stay' 
     else
       prompt "Sorry, valid inputs are 'h, or s'"
     end
-  end
 end
 
-def dealer_turn(hsh, user)
-  loop do
-    total_arr = hsh[user][:hand_total]
-    break if bust?(hsh, :player, hsh[:player][:hand_total].sum)
-    clear_screen
-    display_banner(display_user_turn(user))
+def dealer_turn(hsh, user, cached_total)
     display_all_cards(hsh)
-    break if hold_on_seventeen(total_arr.sum)
-    hit(hsh, user)
-    break if bust?(hsh, user, total_arr.sum) || twentyone?(total_arr.sum)
-  end
+    return cached_total if hold_on_seventeen(cached_total)
+    hit(hsh, user, cached_total)
 end
 
 def welcome_message
@@ -463,8 +455,8 @@ loop do
     initial_deal(round, :player, :dealer)
     initial_count(round)
     clear_screen
-    player_turn(round, :player)
-    dealer_turn(round, :dealer)
+    user_turn(round, :player) # can we make one method call for both players?
+    user_turn(round, :dealer)
     clear_screen
     inspect_hands(round, :player, :dealer, score)
     display_visual_spacer
