@@ -344,24 +344,23 @@ def play_round(hsh, score)
   user_turn(hsh, :dealer, score)
 end
 
-# rubocop:disable Metrics/PerceivedComplexity
-# rubocop:disable Metrics/AbcSize
 def user_turn(hsh, user, score)
   loop do
     cached_total = hsh[user][:hand_total]
     break if bust?(hsh, user, cached_total.sum) || twentyone?(cached_total.sum)
     display_banner(display_user_turn(user))
-    if user == :player
-      value = player_turn(hsh, user, cached_total.sum, score)
-      break if value == 'stay'
-    else
-      break if user_sum(hsh, :player) > 21 || hold?(cached_total.sum)
-      dealer_turn(hsh, user, cached_total.sum)
-    end
+    value = user_go(hsh, user, cached_total.sum, score)
+    break if value == 'p_bust' || value == cached_total.sum || value == 'stay'
   end
 end
-# rubocop:enable Metrics/PerceivedComplexity
-# rubocop:enable Metrics/AbcSize
+
+def user_go(hsh, user, total, score)
+  if user == :player
+    player_turn(hsh, user, total, score)
+  else
+    dealer_turn(hsh, user, total)
+  end
+end
 
 def user_sum(hsh, user)
   hsh[user][:hand_total].sum
@@ -389,6 +388,9 @@ def hold?(total)
 end
 
 def dealer_turn(hsh, user, total)
+  if user_sum(hsh, :player) > 21
+    return 'p_bust'
+  end
   display_all_cards(hsh)
   return total if hold_on_seventeen(total)
   hit(hsh, user, total)
