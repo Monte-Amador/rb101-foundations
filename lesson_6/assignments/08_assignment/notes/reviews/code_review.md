@@ -1,8 +1,14 @@
-I would like to ask for a code review on my RPS bonus feature assignment. Any feedback is very welcome, thank you!
+Code Review Request: 21 w/Bonus Features
 
-There are two parts that are disabled from rubocop because I was confused by the offenses, although I think they were in line with the questions I had for those specific parts. I would like to know of a better way to handle the `deal` and `user_turn` methods.
+I would like to ask for a code review on my [21 bonus features](https://github.com/Monte-Amador/rb101-foundations/blob/main/lesson_6/assignments/08_assignment/twentyone_bonus.rb) assignment. Any feedback is very welcome, thank you!
 
-The `deal` method has a lot of variables assigned througout the method in order to make it more readable while I was assembling the string. Although it works as is, I would like to know of any better suggestions that would make this more simple to read and follow.
+**Github Link**: https://github.com/Monte-Amador/rb101-foundations/blob/main/lesson_6/assignments/08_assignment/twentyone_bonus.rb
 
-The `user_turn` method has a very intricate rubocop offense that I spent a lot of time working out. In the end I believe it is due to the multiple break and conditional statements, but still could not get it to function properly. 
-I am hoping to learn a little more about how to handle this particular offense and just better method hygiene when working with so many conditionals.
+I am using rubocop `0.86`
+The `deal` method has a lot of variables assigned throughout the method in order to make it more readable while I was assembling the string. Although it works as is, I would like to know of any better practices/suggestions that would make this more succint.
+
+The `user_turn` method had a very intricate rubocop offense that I spent a lot of time working out. In the end, I got it reduced considerably and rubocop 0.86 seems to be happy with it. Still though, any suggestions specifically on how to better handle this kind of situation where I am trying to combine two very similar methods into one would be very welcome.
+
+One last question, I have a break condition for the end of the main loop, however the game seems to exit the main loop without calling the last method for whether to continue or not. 
+
+Thank you all for your great and invaluable work and support!

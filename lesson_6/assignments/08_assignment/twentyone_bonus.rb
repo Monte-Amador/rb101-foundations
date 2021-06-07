@@ -1,5 +1,7 @@
 SUITS_ARRAY = [:hearts, :clubs, :spades, :diamonds]
 FACE_CARDS = [:jack, :queen, :king, :ace]
+MATCH_ROUNDS = 2
+
 def prompt(msg)
   puts "=> #{msg}"
 end
@@ -214,7 +216,7 @@ def val_user_input(str, data_arr)
 end
 
 def match_winner?(hsh)
-  hsh.value?(5)
+  hsh.value?(MATCH_ROUNDS)
 end
 
 def select_valid_cards(hsh)
@@ -339,7 +341,7 @@ def stay
   clear_screen
 end
 
-def play_round(hsh, score)
+def play_hand(hsh, score)
   user_turn(hsh, :player, score)
   user_turn(hsh, :dealer, score)
 end
@@ -376,7 +378,7 @@ def player_turn(hsh, user, total, score)
     display_banner("Player stays with #{total}")
     sleep(2)
     clear_screen
-    sleep(2)
+    sleep(1)
     'stay'
   else
     prompt "Sorry, valid inputs are 'h, or s'"
@@ -401,8 +403,8 @@ def welcome_message
   message = <<~MSG
   Welcome to 21!
   The goal is to get to 21 without going over.
-  If neither player gets 21, highest hand wins.
-  First player to win 5 hands wins the match!
+  If neither player reaches 21, the highest hand wins.
+  First player to win #{MATCH_ROUNDS} hands wins the match!
 
   >>> Dealer must stay on 17 or higher <<<
   press return to continue.
@@ -444,24 +446,23 @@ loop do
   welcome_message
   score = initialize_score
   loop do
-    round = init_twentyone('dealer', 'player')
-    initial_deal(round, :player, :dealer)
-    initial_count(round)
+    hand = init_twentyone('dealer', 'player')
+    initial_deal(hand, :player, :dealer)
+    initial_count(hand)
     clear_screen
-    play_round(round, score)
+    play_hand(hand, score)
     clear_screen
-    inspect_hands(round, :player, :dealer, score)
+    inspect_hands(hand, :player, :dealer, score)
     display_visual_spacer
     display_banner(display_score(score))
     if match_winner?(score)
       display_visual_spacer
       prompt display_match_summary(score)
-      return closing_message
+      closing_message
+      break
     else
       continue
     end
-    display_visual_spacer
   end
   break if ask_another_hand == 'n'
 end
-closing_message
