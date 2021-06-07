@@ -1,3 +1,5 @@
+SUITS_ARRAY = [:hearts, :clubs, :spades, :diamonds]
+FACE_CARDS = [:jack, :queen, :king, :ace]
 def prompt(msg)
   puts "=> #{msg}"
 end
@@ -10,66 +12,33 @@ def initialize_score
   { player: 0, dealer: 0 }
 end
 
-# rubocop:disable Metrics/MethodLength
-def initialize_twenty_one
-  { dealer: { cards: [], hand_total: [0] },
-    player: { cards: [], hand_total: [0] },
-    deck: {
-      hearts: {
-        cards: {
-          '2': [2],
-          '3': [3],
-          '4': [4],
-          '5': [5],
-          '6': [6],
-          '7': [7],
-          '8': [8],
-          '9': [9],
-          '10': [10], jack: [10], queen: [10], king: [10], ace: [11]
-        }
-      },
-      diamonds: {
-        cards: {
-          '2': [2],
-          '3': [3],
-          '4': [4],
-          '5': [5],
-          '6': [6],
-          '7': [7],
-          '8': [8],
-          '9': [9],
-          '10': [10], jack: [10], queen: [10], king: [10], ace: [11]
-        }
-      },
-      clubs: {
-        cards: {
-          '2': [2],
-          '3': [3],
-          '4': [4],
-          '5': [5],
-          '6': [6],
-          '7': [7],
-          '8': [8],
-          '9': [9],
-          '10': [10], jack: [10], queen: [10], king: [10], ace: [11]
-        }
-      },
-      spades: {
-        cards: {
-          '2': [2],
-          '3': [3],
-          '4': [4],
-          '5': [5],
-          '6': [6],
-          '7': [7],
-          '8': [8],
-          '9': [9],
-          '10': [10], jack: [10], queen: [10], king: [10], ace: [11]
-        }
-      }
-    } }
+def init_twentyone(user1, user2)
+ { 
+    "#{user1}": { cards: [], hand_total: [0] },
+    "#{user2}": { cards: [], hand_total: [0] }, 
+    deck: init_suits(SUITS_ARRAY)
+ }
 end
-# rubocop:enable Metrics/MethodLength
+
+def init_suits(array)
+  suits = array.each_with_object({}) do |item, hash|
+    hash[item] = init_cards(FACE_CARDS)
+  end
+end
+
+def init_cards(arr)
+  cards = (2..10).each_with_object({}) do |num, hash|
+    hash[:"#{num}"] = [num]
+  end
+  arr.each do |card|
+    if card != :ace
+      cards[:"#{card}"] = [10]
+    else
+      cards[:"#{card}"] = [11]
+    end
+  end
+  {cards: cards}
+end
 
 def initial_deal(hsh, player, dealer)
   hsh[player][:cards] = []
@@ -86,8 +55,6 @@ def initial_count(hsh)
   hsh[:dealer][:hand_total][0] = total_value_cards(hsh, :dealer).sum
 end
 
-# rubocop:disable Metrics/MethodLength
-# rubocop:disable Metrics/AbcSize
 def deal(hsh, user, *hide)
   cached_total = hsh[user][:hand_total] 
   user_hand = hsh[user][:cards]
@@ -112,12 +79,10 @@ def deal(hsh, user, *hide)
   cached_total[0] += new_card[2]
   user_hand << new_card
   if twentyone?(cached_total.sum) && user == :player
-    puts "#{user} got 21!"
+    display_banner("#{user.capitalize} got 21!")
     sleep(1)
   end
 end
-# rubocop:enable Metrics/MethodLength
-# rubocop:enable Metrics/AbcSize
 
 def display_error
   error <<~MSG
@@ -316,7 +281,7 @@ def who_busted(hsh)
 end
 
 def total_value_cards(hsh, user)
-  cached_totalay = hsh[user][:cards].each_with_object([]) do |inner_array, arr|
+  hsh[user][:cards].each_with_object([]) do |inner_array, arr|
     arr << inner_array[2]
   end
 end
@@ -340,8 +305,10 @@ def compare_hands(hsh, player, dealer, score)
   end
 end
 
-def ask_hit_stay
+def ask_hit_stay(score)
   prompt "Would you like to (h)it or (s)tay?"
+  display_visual_spacer
+  display_banner(display_score(score))
   reply = gets.chomp.downcase
   val_user_input(reply, ['s', 'S', 'H', 'h'])
 end
@@ -365,26 +332,26 @@ def stay
   clear_screen
 end
 
-def play_round(hsh)
-  user_turn(hsh, :player)
-  user_turn(hsh, :dealer)
+def play_round(hsh, score)
+  user_turn(hsh, :player, score)
+  user_turn(hsh, :dealer, score)
 end
 
-def user_turn(hsh, user)
+def user_turn(hsh, user, score)
   count = 0
   loop do
     cached_total = hsh[user][:hand_total]
     break if bust?(hsh, user, cached_total.sum) || twentyone?(cached_total.sum)
     display_banner(display_user_turn(user))
     if user == :player
-      break if player_turn(hsh, user, cached_total.sum) == 'stay'
+      break if player_turn(hsh, user, cached_total.sum, score) == 'stay'
     else
       if count == 0
         sleep(2) unless bust?(hsh, :player, user_sum(hsh, :player))
       end
       count += 1
       break if bust?(hsh, :player, user_sum(hsh, :player))
-      break if dealer_turn(hsh, user, cached_total.sum) == cached_total.sum
+      break if dealer_turn(hsh, user, cached_total.sum, score) == cached_total.sum
     end
   end
 end
@@ -393,9 +360,9 @@ def user_sum(hsh, user)
   hsh[user][:hand_total].sum
 end
 
-def player_turn(hsh, user, total)
+def player_turn(hsh, user, total, score)
     display_initial_hands(hsh)
-    action = ask_hit_stay
+    action = ask_hit_stay(score)
     clear_screen
     if action == 'h'
       hit(hsh, user, total)
@@ -409,7 +376,7 @@ def player_turn(hsh, user, total)
     end
 end
 
-def dealer_turn(hsh, user, total)
+def dealer_turn(hsh, user, total, score)
     display_all_cards(hsh)
     return total if hold_on_seventeen(total)
     hit(hsh, user, total)
@@ -443,7 +410,7 @@ def continue
 end
 
 def display_score(hsh)
-  "21 Match Score:
+  "Match Standings (first to 5 wins):
   Dealer: #{hsh[:dealer]}
   Player: #{hsh[:player]}"
 end
@@ -463,13 +430,11 @@ loop do
   welcome_message
   score = initialize_score
   loop do
-    round = initialize_twenty_one
+    round = init_twentyone('dealer', 'player') 
     initial_deal(round, :player, :dealer)
     initial_count(round)
     clear_screen
-    play_round(round)
-    #user_turn(round, :player) # can we make one method call for both players?
-    #user_turn(round, :dealer)
+    play_round(round, score)
     clear_screen
     inspect_hands(round, :player, :dealer, score)
     display_visual_spacer
