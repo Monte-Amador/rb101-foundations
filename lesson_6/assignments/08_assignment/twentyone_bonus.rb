@@ -13,15 +13,15 @@ def initialize_score
 end
 
 def init_twentyone(user1, user2)
- { 
+  {
     "#{user1}": { cards: [], hand_total: [0] },
-    "#{user2}": { cards: [], hand_total: [0] }, 
+    "#{user2}": { cards: [], hand_total: [0] },
     deck: init_suits(SUITS_ARRAY)
- }
+  }
 end
 
 def init_suits(array)
-  suits = array.each_with_object({}) do |item, hash|
+  array.each_with_object({}) do |item, hash|
     hash[item] = init_cards(FACE_CARDS)
   end
 end
@@ -31,13 +31,13 @@ def init_cards(arr)
     hash[:"#{num}"] = [num]
   end
   arr.each do |card|
-    if card != :ace
-      cards[:"#{card}"] = [10]
-    else
-      cards[:"#{card}"] = [11]
-    end
+    cards[:"#{card}"] = if card != :ace
+                          [10]
+                        else
+                          [11]
+                        end
   end
-  {cards: cards}
+  { cards: cards }
 end
 
 def initial_deal(hsh, player, dealer)
@@ -55,8 +55,10 @@ def initial_count(hsh)
   hsh[:dealer][:hand_total][0] = total_value_cards(hsh, :dealer).sum
 end
 
+# rubocop:disable Metrics/MethodLength
+# rubocop:disable Metrics/AbcSize
 def deal(hsh, user, *hide)
-  cached_total = hsh[user][:hand_total] 
+  cached_total = hsh[user][:hand_total]
   user_hand = hsh[user][:cards]
   new_card = []
   deck = hsh[:deck]
@@ -83,6 +85,8 @@ def deal(hsh, user, *hide)
     sleep(1)
   end
 end
+# rubocop:enable Metrics/MethodLength
+# rubocop:enable Metrics/AbcSize
 
 def display_error
   error <<~MSG
@@ -115,8 +119,11 @@ def display_user_turn(user)
 end
 
 def display_initial_hands(hsh)
-  prompt "Dealer's Hand: #{display_dealer_cards(hsh, :dealer)}"
-  prompt "Player's Hand: #{display_user_cards(hsh, :player, hsh[:player][:hand_total].sum)}"
+  message = <<~MSG
+  Dealer's Hand: #{display_dealer_cards(hsh, :dealer)}
+  Player's Hand: #{display_user_cards(hsh, :player, user_sum(hsh, :player))}
+  MSG
+  prompt message
 end
 
 def display_dealer_cards(hsh, user)
@@ -255,7 +262,7 @@ end
 def bust?(hsh, user, total)
   values = []
   cards = hsh[user][:cards]
-  cards.each { |item| values << item[2] } 
+  cards.each { |item| values << item[2] }
   if total > 21 && values.include?(11)
     reassign_ace!(hsh, user, cards)
     false
@@ -338,21 +345,16 @@ def play_round(hsh, score)
 end
 
 def user_turn(hsh, user, score)
-  count = 0
   loop do
     cached_total = hsh[user][:hand_total]
     break if bust?(hsh, user, cached_total.sum) || twentyone?(cached_total.sum)
     display_banner(display_user_turn(user))
-    if user == :player
-      break if player_turn(hsh, user, cached_total.sum, score) == 'stay'
-    else
-      if count == 0
-        sleep(2) unless bust?(hsh, :player, user_sum(hsh, :player))
-      end
-      count += 1
-      break if bust?(hsh, :player, user_sum(hsh, :player))
-      break if dealer_turn(hsh, user, cached_total.sum, score) == cached_total.sum
-    end
+    value = if user == :player
+              player_turn(hsh, user, cached_total.sum, score)
+            else
+              dealer_turn(hsh, user, cached_total.sum, score)
+            end
+    break if user_sum(hsh, :player) > 21 || value == cached_total.sum
   end
 end
 
@@ -361,25 +363,30 @@ def user_sum(hsh, user)
 end
 
 def player_turn(hsh, user, total, score)
-    display_initial_hands(hsh)
-    action = ask_hit_stay(score)
+  display_initial_hands(hsh)
+  action = ask_hit_stay(score)
+  clear_screen
+  if action == 'h'
+    hit(hsh, user, total)
+  elsif action == 's'
+    display_banner("Player stays with #{total}")
+    sleep(2)
     clear_screen
-    if action == 'h'
-      hit(hsh, user, total)
-    elsif action == 's'
-      display_banner("Player stays with #{total}")
-      sleep(2)
-      clear_screen
-      'stay' 
-    else
-      prompt "Sorry, valid inputs are 'h, or s'"
-    end
+    sleep(2)
+    total
+  else
+    prompt "Sorry, valid inputs are 'h, or s'"
+  end
 end
 
-def dealer_turn(hsh, user, total, score)
-    display_all_cards(hsh)
-    return total if hold_on_seventeen(total)
-    hit(hsh, user, total)
+def hold?(total)
+  hold_on_seventeen(total) == total
+end
+
+def dealer_turn(hsh, user, total, _score)
+  display_all_cards(hsh)
+  return total if hold_on_seventeen(total)
+  hit(hsh, user, total)
 end
 
 def welcome_message
@@ -420,7 +427,7 @@ def display_visual_spacer
 end
 
 def ask_another_hand
-  display_visual_spacer 
+  display_visual_spacer
   prompt "shuffle and deal again?(y/n)"
   answer = gets.chomp.downcase
   val_user_input(answer, ['y', 'n'])
@@ -430,7 +437,7 @@ loop do
   welcome_message
   score = initialize_score
   loop do
-    round = init_twentyone('dealer', 'player') 
+    round = init_twentyone('dealer', 'player')
     initial_deal(round, :player, :dealer)
     initial_count(round)
     clear_screen
@@ -444,7 +451,7 @@ loop do
       prompt display_match_summary(score)
       return closing_message
     else
-      continue 
+      continue
     end
     display_visual_spacer
   end
