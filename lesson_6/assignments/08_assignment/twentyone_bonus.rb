@@ -1,6 +1,6 @@
 SUITS_ARRAY = [:hearts, :clubs, :spades, :diamonds]
 FACE_CARDS = [:jack, :queen, :king, :ace]
-MATCH_ROUNDS = 2
+MATCH_ROUNDS = 5
 
 def prompt(msg)
   puts "=> #{msg}"
@@ -426,7 +426,7 @@ def continue
 end
 
 def display_score(hsh)
-  "Match Standings (first to 5 wins):
+  "Match Standings (first to #{MATCH_ROUNDS} wins):
   Dealer: #{hsh[:dealer]}
   Player: #{hsh[:player]}"
 end
@@ -436,7 +436,6 @@ def display_visual_spacer
 end
 
 def ask_another_hand
-  display_visual_spacer
   prompt "shuffle and deal again?(y/n)"
   answer = gets.chomp.downcase
   val_user_input(answer, ['y', 'n'])
@@ -458,11 +457,13 @@ loop do
     if match_winner?(score)
       display_visual_spacer
       prompt display_match_summary(score)
-      closing_message
       break
     else
       continue
     end
   end
-  break if ask_another_hand == 'n'
+  if ask_another_hand == 'n'
+    closing_message
+    break
+  end
 end
