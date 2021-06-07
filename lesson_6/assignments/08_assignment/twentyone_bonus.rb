@@ -344,6 +344,8 @@ def play_round(hsh, score)
   user_turn(hsh, :dealer, score)
 end
 
+# rubocop:disable Metrics/PerceivedComplexity
+# rubocop:disable Metrics/AbcSize
 def user_turn(hsh, user, score)
   loop do
     cached_total = hsh[user][:hand_total]
@@ -358,6 +360,8 @@ def user_turn(hsh, user, score)
     end
   end
 end
+# rubocop:enable Metrics/PerceivedComplexity
+# rubocop:enable Metrics/AbcSize
 
 def user_sum(hsh, user)
   hsh[user][:hand_total].sum
