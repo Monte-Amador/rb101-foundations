@@ -349,12 +349,13 @@ def user_turn(hsh, user, score)
     cached_total = hsh[user][:hand_total]
     break if bust?(hsh, user, cached_total.sum) || twentyone?(cached_total.sum)
     display_banner(display_user_turn(user))
-    value = if user == :player
-              player_turn(hsh, user, cached_total.sum, score)
-            else
-              dealer_turn(hsh, user, cached_total.sum, score)
-            end
-    break if user_sum(hsh, :player) > 21 || value == cached_total.sum
+    if user == :player
+      value = player_turn(hsh, user, cached_total.sum, score)
+      break if value == 'stay'
+    else
+      break if user_sum(hsh, :player) > 21 || hold?(cached_total.sum)
+      dealer_turn(hsh, user, cached_total.sum)
+    end
   end
 end
 
@@ -373,7 +374,7 @@ def player_turn(hsh, user, total, score)
     sleep(2)
     clear_screen
     sleep(2)
-    total
+    'stay'
   else
     prompt "Sorry, valid inputs are 'h, or s'"
   end
@@ -383,7 +384,7 @@ def hold?(total)
   hold_on_seventeen(total) == total
 end
 
-def dealer_turn(hsh, user, total, _score)
+def dealer_turn(hsh, user, total)
   display_all_cards(hsh)
   return total if hold_on_seventeen(total)
   hit(hsh, user, total)
